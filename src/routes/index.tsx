@@ -215,7 +215,8 @@ function SarthiPortal() {
     };
 
     const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-
+     console.log("Environment variable VITE_API_URL is:", import.meta.env.VITE_API_URL);
+    console.log("Final API_BASE_URL used:", API_BASE_URL);
     try {
     const response = await fetch(`${API_BASE_URL}/api/match-schemes`, {
       method: "POST",

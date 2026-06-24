@@ -1,12 +1,8 @@
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import { defineConfig } from 'vite';
 import viteReact from '@vitejs/plugin-react';
-import { nitro } from 'nitro/vite'; // <--- Add this import
+import { nitro } from 'nitro/vite';
 
 export default defineConfig({
-  plugins: [
-    tanstackStart(),
-    nitro(), // <--- Add this to your plugins array
-    viteReact(),
-  ],
+  plugins: [tanstackStart(), nitro(), viteReact()],
 });

@@ -214,7 +214,7 @@ function SarthiPortal() {
       normalized_english_test: parseFloat(formData.normalized_english_test) || 0.0,
     };
 
-    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+    const API_BASE_URL = "https://sarthi-backend-drdp.onrender.com";
      console.log("Environment variable VITE_API_URL is:", import.meta.env.VITE_API_URL);
     console.log("Final API_BASE_URL used:", API_BASE_URL);
     try {

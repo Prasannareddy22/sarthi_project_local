@@ -53,7 +53,7 @@ function SarthiPortal() {
   const [errorMessage, setErrorMessage] = useState("");
   const [activeSection, setActiveSection] = useState("personal");
   const [activeTab, setActiveTab] = useState<TabId>('engine');
-
+  
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -214,12 +214,14 @@ function SarthiPortal() {
       normalized_english_test: parseFloat(formData.normalized_english_test) || 0.0,
     };
 
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/match-schemes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    const response = await fetch(`${API_BASE_URL}/api/match-schemes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
       setMatchedSchemes(data.details || []);

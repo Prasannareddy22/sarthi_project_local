@@ -2,7 +2,13 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import { defineConfig } from 'vite';
 import viteReact from '@vitejs/plugin-react';
 import { nitro } from 'nitro/vite';
+import tailwindcss from '@tailwindcss/vite'; // Ensure this is imported
 
 export default defineConfig({
-  plugins: [tanstackStart(), nitro(), viteReact()],
+  plugins: [
+    tailwindcss(), // This must be here to handle the v4 CSS
+    tanstackStart(),
+    nitro(),
+    viteReact(),
+  ],
 });

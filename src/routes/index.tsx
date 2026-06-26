@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useRef, useMemo } from "react";
 import { SchemesTab , Scheme } from "../components/ui/SchemesTab";
 import ApplicationsTab from "../components/ui/ApplicationsTab";
+import SchemeList from '../components/ui/SchemeList';
 type TabId = 'engine' | 'schemes' | 'applications' | 'notifications' | 'help';
 
 import {
@@ -912,11 +913,11 @@ function SarthiPortal() {
           </section>
         )}
 
-            {/* SCHEMES TAB */}
+           {/* SCHEMES TAB */}
           {activeTab === 'schemes' && (
             <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-              {/* Pass null so the component knows to use the fallback schemesData */}
-              <SchemesTab /> 
+              <h2 className="text-xl font-bold mb-6">Available Welfare Schemes</h2>
+              <SchemeList /> 
             </div>
           )}
       

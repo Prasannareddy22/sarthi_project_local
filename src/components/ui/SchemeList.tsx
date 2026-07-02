@@ -12,7 +12,6 @@ const SchemeList: React.FC = () => {
   const filteredSchemes = schemes.filter(s => 
     s.name.toLowerCase().includes(search.toLowerCase())
   );
-
   return (
     <div className="scheme-list-container">
       <h2>Available Schemes</h2>
@@ -40,7 +39,7 @@ const SchemeList: React.FC = () => {
           ))
         ) : (
           <p className="col-span-full text-center py-10 text-[#64748B]">
-            No schemes found matching your search.
+            No schemes found.
           </p>
         )}
       </div>

@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import { SchemesTab , Scheme } from "../components/ui/SchemesTab";
 import ApplicationsTab from "../components/ui/ApplicationsTab";
 import SchemeList from '../components/ui/SchemeList';
 type TabId = 'engine' | 'schemes' | 'applications' | 'notifications' | 'help';
+
 
 import {
   Search,
@@ -38,23 +39,39 @@ import {
   Globe,
 } from "lucide-react";
 
+// 1. Define the type for your search params
+type IndexSearch = {
+  tab?: 'engine' | 'schemes' | 'applications' | 'notifications' | 'help';
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [{ title: "SARTHI | Welfare Eligibility Portal" }],
   }),
+  // 2. Add validation
+  validateSearch: (search: Record<string, unknown>): IndexSearch => {
+    return {
+      tab: (search.tab as IndexSearch['tab']) || 'engine',
+    };
+  },
   component: SarthiPortal,
 });
 
 
 
 function SarthiPortal() {
+  const { tab } = Route.useSearch();
+  const [activeTab, setActiveTab] = useState<TabId>(tab || 'engine');
+  useEffect(() => {
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [tab]);
   const [loading, setLoading] = useState(false);
   const [matchedSchemes, setMatchedSchemes] = useState<Scheme[] | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeSection, setActiveSection] = useState("personal");
-  const [activeTab, setActiveTab] = useState<TabId>('engine');
-  
   const [formData, setFormData] = useState({
     name: "",
     age: "",

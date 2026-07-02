@@ -2,13 +2,20 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { Scheme } from '@/data/schemes';
 
+// 1. Add 'isTargeted' to the interface
 interface SchemeCardProps {
   scheme: Scheme;
+  isTargeted?: boolean;
 }
 
-const SchemeCard: React.FC<SchemeCardProps> = ({ scheme }) => {
+const SchemeCard: React.FC<SchemeCardProps> = ({ scheme, isTargeted }) => {
   return (
-    <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow">
+    // 2. Use the prop to toggle styles
+    <div className={`p-6 rounded-2xl border transition-all ${
+      isTargeted 
+        ? "border-[#1E3A8A] ring-2 ring-[#1E3A8A]/20 bg-[#F8FAFF]" 
+        : "bg-white border-[#E2E8F0] shadow-sm hover:shadow-md"
+    }`}>
       <h3 className="text-lg font-bold text-[#0B2240] mb-3">{scheme.name}</h3>
       <p className="text-[#64748B] text-sm mb-4 line-clamp-2">{scheme.description}</p>
       

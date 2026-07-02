@@ -1,5 +1,10 @@
 import { getSchemeById } from '../../services/schemeService';
 import { useParams, Link } from '@tanstack/react-router'; 
+import { Scheme } from '@/data/schemes';
+
+interface SchemeDetailProps {
+  scheme: Scheme;
+}
 
 const SchemeDetail = () => {
   const { id } = useParams({ from: '/scheme/$id' });

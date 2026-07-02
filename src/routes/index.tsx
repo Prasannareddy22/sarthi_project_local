@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useMemo, useEffect, useLayoutEffect } from "react";
 import { SchemesTab , Scheme } from "../components/ui/SchemesTab";
 import ApplicationsTab from "../components/ui/ApplicationsTab";
 import SchemeList from '../components/ui/SchemeList';
+import EligibleCard from '../components/EligibleCard';
 type TabId = 'engine' | 'schemes' | 'applications' | 'notifications' | 'help';
 
 
@@ -45,10 +46,6 @@ type IndexSearch = {
 };
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [{ title: "SARTHI | Welfare Eligibility Portal" }],
-  }),
-  // 2. Add validation
   validateSearch: (search: Record<string, unknown>): IndexSearch => {
     return {
       tab: (search.tab as IndexSearch['tab']) || 'engine',
@@ -57,16 +54,17 @@ export const Route = createFileRoute("/")({
   component: SarthiPortal,
 });
 
-
-
 function SarthiPortal() {
   const { tab } = Route.useSearch();
-  const [activeTab, setActiveTab] = useState<TabId>(tab || 'engine');
+  const [activeTab, setActiveTab] = useState(tab || 'engine');
+
   useEffect(() => {
     if (tab) {
       setActiveTab(tab);
     }
   }, [tab]);
+
+  
   const [loading, setLoading] = useState(false);
   const [matchedSchemes, setMatchedSchemes] = useState<Scheme[] | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1235,27 +1233,3 @@ function SchemeMatchCard({ scheme }: { scheme: Scheme }) {
   );
 }
 
-function EligibleCard({ scheme }: { scheme: Scheme }) {
-  return (
-    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-white to-[#F8FAFC] border border-[#E2E8F0] p-5 hover:shadow-xl hover:-translate-y-1 transition-all group">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#10B981]/10 blur-3xl rounded-full" />
-      <div className="relative flex items-start justify-between">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] grid place-items-center text-white shadow-lg shadow-[#10B981]/30">
-          <Award className="w-5 h-5" />
-        </div>
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#10B981] bg-[#10B981]/10 px-2 py-1 rounded-full">
-          <CheckCircle2 className="w-3 h-3" /> 100% Match
-        </span>
-      </div>
-      <div className="relative mt-5 text-[15px] font-bold text-[#0B2240] leading-snug min-h-[44px]">
-        {scheme.name || scheme.scheme}
-      </div>
-      <div className="relative mt-1 text-[11px] text-[#64748B] uppercase tracking-wider font-semibold">
-        Government of Telangana
-      </div>
-      <button className="relative mt-5 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0B2240] text-white text-[13px] font-semibold hover:bg-[#1E3A8A] transition-colors">
-        Apply now <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-      </button>
-    </div>
-  );
-}

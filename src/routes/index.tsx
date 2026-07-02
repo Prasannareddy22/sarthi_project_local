@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useRef, useMemo, useEffect, useLayoutEffect } from "react";
-import { SchemesTab , Scheme } from "../components/ui/SchemesTab";
+import { Link } from "@tanstack/react-router";
+import { SchemesTab, Scheme } from "../components/ui/SchemesTab";
 import ApplicationsTab from "../components/ui/ApplicationsTab";
-import SchemeList from '../components/ui/SchemeList';
-import EligibleCard from '../components/EligibleCard';
-type TabId = 'engine' | 'schemes' | 'applications' | 'notifications' | 'help';
-
+import NotificationsTab from "../components/ui/NotificationsTab";
+import HelpTab from "../components/ui/HelpTab";
+import SchemeList from "../components/ui/SchemeList";
+import EligibleCard from "../components/EligibleCard";
+import { resolveSchemeIdentity } from "@/lib/schemeMatch";
+type TabId = "engine" | "schemes" | "applications" | "notifications" | "help";
 
 import {
   Search,
@@ -42,13 +45,13 @@ import {
 
 // 1. Define the type for your search params
 type IndexSearch = {
-  tab?: 'engine' | 'schemes' | 'applications' | 'notifications' | 'help';
+  tab?: "engine" | "schemes" | "applications" | "notifications" | "help";
 };
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): IndexSearch => {
     return {
-      tab: (search.tab as IndexSearch['tab']) || 'engine',
+      tab: (search.tab as IndexSearch["tab"]) || "engine",
     };
   },
   component: SarthiPortal,
@@ -56,7 +59,7 @@ export const Route = createFileRoute("/")({
 
 function SarthiPortal() {
   const { tab } = Route.useSearch();
-  const [activeTab, setActiveTab] = useState(tab || 'engine');
+  const [activeTab, setActiveTab] = useState(tab || "engine");
 
   useEffect(() => {
     if (tab) {
@@ -64,7 +67,6 @@ function SarthiPortal() {
     }
   }, [tab]);
 
-  
   const [loading, setLoading] = useState(false);
   const [matchedSchemes, setMatchedSchemes] = useState<Scheme[] | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -116,7 +118,6 @@ function SarthiPortal() {
     normalized_english_test: "",
     electricity_consumption: "",
     has_electricity_bill_dues: false,
-
   });
 
   const requiredFields = [
@@ -126,7 +127,7 @@ function SarthiPortal() {
     { key: "religion", label: "Religion" },
     { key: "caste", label: "Caste" },
     { key: "annual_income", label: "Annual Income" },
-    { key: "is_rural", label: "Residence Type" }
+    { key: "is_rural", label: "Residence Type" },
   ];
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -138,19 +139,34 @@ function SarthiPortal() {
 
   // Section completion tracking
   const completion = useMemo(() => {
-    const personal = [formData.name, formData.age, formData.gender, formData.religion, formData.caste].filter(Boolean).length;
-    const socio = [formData.annual_income].filter(Boolean).length + (formData.is_rural !== undefined ? 1 : 0);
+    const personal = [
+      formData.name,
+      formData.age,
+      formData.gender,
+      formData.religion,
+      formData.caste,
+    ].filter(Boolean).length;
+    const socio =
+      [formData.annual_income].filter(Boolean).length + (formData.is_rural !== undefined ? 1 : 0);
     const eduAgri = [formData.occupation, formData.education_level].filter(Boolean).length;
     const welfare = [
-      formData.is_widow, formData.is_single_woman,
-      formData.is_disabled, formData.is_pregnant
+      formData.is_widow,
+      formData.is_single_woman,
+      formData.is_disabled,
+      formData.is_pregnant,
     ].filter(Boolean).length;
     return {
       personal: Math.round((personal / 5) * 100),
       socio: Math.round((socio / 2) * 100),
       eduAgri: Math.round((eduAgri / 2) * 100),
       welfare: welfare > 0 ? 100 : 0,
-      overall: Math.round(((personal / 5) * 0.4 + (socio / 2) * 0.3 + (eduAgri / 2) * 0.2 + (welfare > 0 ? 1 : 0) * 0.1) * 100),
+      overall: Math.round(
+        ((personal / 5) * 0.4 +
+          (socio / 2) * 0.3 +
+          (eduAgri / 2) * 0.2 +
+          (welfare > 0 ? 1 : 0) * 0.1) *
+          100,
+      ),
     };
   }, [formData]);
 
@@ -172,7 +188,9 @@ function SarthiPortal() {
     });
 
     if (missingField) {
-      setErrorMessage(`Please fill out the ${missingField.label} field before checking eligibility.`);
+      setErrorMessage(
+        `Please fill out the ${missingField.label} field before checking eligibility.`,
+      );
       const ref = fieldRefs[missingField.key];
       if (ref?.current) {
         ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -231,14 +249,14 @@ function SarthiPortal() {
     };
 
     const API_BASE_URL = "https://sarthi-backend-drdp.onrender.com";
-     console.log("Environment variable VITE_API_URL is:", import.meta.env.VITE_API_URL);
+    console.log("Environment variable VITE_API_URL is:", import.meta.env.VITE_API_URL);
     console.log("Final API_BASE_URL used:", API_BASE_URL);
     try {
-    const response = await fetch(`${API_BASE_URL}/api/match-schemes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      const response = await fetch(`${API_BASE_URL}/api/match-schemes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
       setMatchedSchemes(data.details || []);
@@ -257,10 +275,14 @@ function SarthiPortal() {
   const sections = [
     { id: "personal", label: "Personal Information", icon: User, progress: completion.personal },
     { id: "socio", label: "Socio-Economic", icon: Wallet, progress: completion.socio },
-    { id: "education", label: "Education & Agriculture", icon: GraduationCap, progress: completion.eduAgri },
+    {
+      id: "education",
+      label: "Education & Agriculture",
+      icon: GraduationCap,
+      progress: completion.eduAgri,
+    },
     { id: "welfare", label: "Welfare Factors", icon: Shield, progress: completion.welfare },
   ];
-
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] antialiased selection:bg-[#1E3A8A]/15 selection:text-[#0B2240]">
@@ -274,7 +296,9 @@ function SarthiPortal() {
               <span className="sm:hidden">GoT</span>
             </span>
             <span className="text-white/30">|</span>
-            <span className="hidden md:inline text-white/70">An Official Portal of the Welfare Departments</span>
+            <span className="hidden md:inline text-white/70">
+              An Official Portal of the Welfare Departments
+            </span>
           </div>
           <div className="flex items-center gap-1 text-white/80">
             <Globe className="w-3 h-3" />
@@ -297,7 +321,9 @@ function SarthiPortal() {
             </div>
             <div className="leading-tight">
               <div className="text-[15px] font-bold tracking-tight text-[#0F172A]">SARTHI</div>
-              <div className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-medium">Don't Miss What's Yours</div>
+              <div className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-medium">
+                Don't Miss What's Yours
+              </div>
             </div>
           </div>
 
@@ -309,12 +335,12 @@ function SarthiPortal() {
               { icon: Bell, label: "Notifications", id: "notifications" },
               { icon: HelpCircle, label: "Help", id: "help" },
             ].map((item) => (
-              <button 
-                key={item.id} 
+              <button
+                key={item.id}
                 onClick={() => setActiveTab(item.id as TabId)} // Safe casting now
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                  activeTab === item.id 
-                    ? "bg-[#F1F5F9] text-[#0B2240] font-bold" 
+                  activeTab === item.id
+                    ? "bg-[#F1F5F9] text-[#0B2240] font-bold"
                     : "hover:bg-[#F8FAFC] hover:text-[#0B2240]"
                 }`}
               >
@@ -332,12 +358,18 @@ function SarthiPortal() {
                 className="w-56 pl-9 pr-3 py-2 text-[13px] rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] focus:outline-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/10 transition"
               />
             </div>
-            <button className="hidden lg:inline-flex px-3 py-2 text-[13px] font-semibold text-[#0B2240] hover:bg-[#F8FAFC] rounded-lg">
+            <Link
+              to="/login"
+              className="hidden lg:inline-flex px-3 py-2 text-[13px] font-semibold text-[#0B2240] hover:bg-[#F8FAFC] rounded-lg"
+            >
               Sign in
-            </button>
-            <button className="px-3.5 py-2 text-[13px] font-semibold bg-[#0B2240] text-white rounded-lg hover:bg-[#1E3A8A] shadow-sm transition-colors">
+            </Link>
+            <Link
+              to="/register"
+              className="px-3.5 py-2 text-[13px] font-semibold bg-[#0B2240] text-white rounded-lg hover:bg-[#1E3A8A] shadow-sm transition-colors"
+            >
               Register
-            </button>
+            </Link>
           </div>
 
           <button
@@ -353,523 +385,763 @@ function SarthiPortal() {
             {[
               { icon: Sparkles, label: "Eligibility Engine", id: "engine" },
               { icon: Layers, label: "Schemes", id: "schemes" },
-              { icon: FileText, label: "Applications" , id: "applications"},
-              { icon: Bell, label: "Notifications" , id: "notifications"},
-              { icon: HelpCircle, label: "Help" , id: "help"},
+              { icon: FileText, label: "Applications", id: "applications" },
+              { icon: Bell, label: "Notifications", id: "notifications" },
+              { icon: HelpCircle, label: "Help", id: "help" },
             ].map((item) => (
               <button // Change <a> to <button>
-              key={item.label} 
-              onClick={() => {
-                setActiveTab(item.id as TabId); // Safe casting
-                setMobileMenuOpen(false); // Close menu after clicking
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-[14px] font-medium text-[#334155] hover:bg-[#F8FAFC]"
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </button>
+                key={item.label}
+                onClick={() => {
+                  setActiveTab(item.id as TabId); // Safe casting
+                  setMobileMenuOpen(false); // Close menu after clicking
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-[14px] font-medium text-[#334155] hover:bg-[#F8FAFC]"
+              >
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </button>
             ))}
             <div className="flex gap-2 pt-2">
-              <button className="flex-1 px-3 py-2 text-[13px] font-semibold border border-[#E2E8F0] rounded-lg">Sign in</button>
-              <button className="flex-1 px-3 py-2 text-[13px] font-semibold bg-[#0B2240] text-white rounded-lg">Register</button>
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex-1 text-center px-3 py-2 text-[13px] font-semibold border border-[#E2E8F0] rounded-lg"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex-1 text-center px-3 py-2 text-[13px] font-semibold bg-[#0B2240] text-white rounded-lg"
+              >
+                Register
+              </Link>
             </div>
           </div>
         )}
       </header>
 
-     
-
       {/* HERO */}
-      {activeTab === 'engine' && (
-      <section className="relative overflow-hidden bg-[#0B2240] text-white">
-        <div className="absolute inset-0 opacity-[0.35]">
-          <div className="absolute -top-32 -left-24 w-[520px] h-[520px] rounded-full bg-[#1E3A8A] blur-3xl" />
-          <div className="absolute top-20 right-0 w-[460px] h-[460px] rounded-full bg-[#F59E0B]/40 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 w-[420px] h-[420px] rounded-full bg-[#10B981]/30 blur-3xl" />
-        </div>
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)",
-            backgroundSize: "44px 44px",
-          }}
-        />
+      {activeTab === "engine" && (
+        <section className="relative overflow-hidden bg-[#0B2240] text-white">
+          <div className="absolute inset-0 opacity-[0.35]">
+            <div className="absolute -top-32 -left-24 w-[520px] h-[520px] rounded-full bg-[#1E3A8A] blur-3xl" />
+            <div className="absolute top-20 right-0 w-[460px] h-[460px] rounded-full bg-[#F59E0B]/40 blur-3xl" />
+            <div className="absolute bottom-0 left-1/3 w-[420px] h-[420px] rounded-full bg-[#10B981]/30 blur-3xl" />
+          </div>
+          <div
+            className="absolute inset-0 opacity-[0.08]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)",
+              backgroundSize: "44px 44px",
+            }}
+          />
 
-        <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-16 pb-24 lg:pt-24 lg:pb-32">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-[11px] font-medium tracking-wide">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                Live · 30+ welfare schemes indexed
-              </div>
-              <h1 className="mt-6 text-[40px] sm:text-[56px] lg:text-[68px] leading-[1.02] font-bold tracking-[-0.025em]">
-                Don't miss what's <span className="text-[#F59E0B]">rightfully yours.</span>
-              </h1>
-              <p className="mt-6 text-[16px] sm:text-[18px] leading-relaxed text-white/70 max-w-2xl">
-                SARTHI is Telangana's unified eligibility engine. Fill your citizen profile once — get
-                instantly matched against every state welfare scheme you qualify for, from pensions and
-                scholarships to housing, healthcare, and agricultural support.
-              </p>
+          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-16 pb-24 lg:pt-24 lg:pb-32">
+            <div className="grid lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-7">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-[11px] font-medium tracking-wide">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                  Live · 30+ welfare schemes indexed
+                </div>
+                <h1 className="mt-6 text-[40px] sm:text-[56px] lg:text-[68px] leading-[1.02] font-bold tracking-[-0.025em]">
+                  Don't miss what's <span className="text-[#F59E0B]">rightfully yours.</span>
+                </h1>
+                <p className="mt-6 text-[16px] sm:text-[18px] leading-relaxed text-white/70 max-w-2xl">
+                  SARTHI is Telangana's unified eligibility engine. Fill your citizen profile once —
+                  get instantly matched against every state welfare scheme you qualify for, from
+                  pensions and scholarships to housing, healthcare, and agricultural support.
+                </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <a
-                  href="#eligibility-form"
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#0B2240] rounded-xl font-semibold text-[14px] shadow-xl shadow-black/20 hover:shadow-2xl hover:-translate-y-0.5 transition-all"
-                >
-                  Check my eligibility <ArrowRight className="w-4 h-4" />
-                </a>
-                <a
-                  href="#"
-                  className="inline-flex items-center gap-2 px-5 py-3 border border-white/20 backdrop-blur rounded-xl font-semibold text-[14px] text-white/90 hover:bg-white/10"
-                >
-                  Browse all schemes
-                </a>
-              </div>
-
-              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px] text-white/60">
-                <div className="flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-[#10B981]" /> Verified Govt Data</div>
-                <div className="flex items-center gap-2"><Lock className="w-4 h-4 text-[#10B981]" /> 256-bit Encrypted</div>
-                <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-[#10B981]" /> Aadhaar-grade Privacy</div>
-              </div>
-            </div>
-
-            {/* Glassmorphism stats */}
-            <div className="lg:col-span-5">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { icon: Users, label: "Citizens Served", value: "2.4 Cr", trend: "+12.4%", accent: "from-[#1E3A8A]/40 to-[#1E3A8A]/0" },
-                  { icon: IndianRupee, label: "DBT Disbursed", value: "₹48,200 Cr", trend: "+8.1%", accent: "from-[#10B981]/40 to-[#10B981]/0" },
-                  { icon: Layers, label: "Active Schemes", value: "30+", trend: "Live", accent: "from-[#F59E0B]/40 to-[#F59E0B]/0" },
-                  { icon: TrendingUp, label: "Match Accuracy", value: "98.6%", trend: "AI-graded", accent: "from-white/30 to-white/0" },
-                ].map((s) => (
-                  <div
-                    key={s.label}
-                    className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-xl p-5 hover:bg-white/[0.1] transition group"
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <a
+                    href="#eligibility-form"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#0B2240] rounded-xl font-semibold text-[14px] shadow-xl shadow-black/20 hover:shadow-2xl hover:-translate-y-0.5 transition-all"
                   >
-                    <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${s.accent} blur-2xl`} />
-                    <div className="relative">
-                      <div className="flex items-center justify-between">
-                        <div className="w-9 h-9 rounded-lg bg-white/10 grid place-items-center">
-                          <s.icon className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="text-[10px] font-semibold text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 rounded">{s.trend}</span>
-                      </div>
-                      <div className="mt-4 text-[26px] font-bold tracking-tight">{s.value}</div>
-                      <div className="text-[11px] text-white/60 mt-0.5">{s.label}</div>
-                    </div>
+                    Check my eligibility <ArrowRight className="w-4 h-4" />
+                  </a>
+                  <a
+                    href="#"
+                    className="inline-flex items-center gap-2 px-5 py-3 border border-white/20 backdrop-blur rounded-xl font-semibold text-[14px] text-white/90 hover:bg-white/10"
+                  >
+                    Browse all schemes
+                  </a>
+                </div>
+
+                <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px] text-white/60">
+                  <div className="flex items-center gap-2">
+                    <BadgeCheck className="w-4 h-4 text-[#10B981]" /> Verified Govt Data
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-[#10B981]" /> 256-bit Encrypted
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-[#10B981]" /> Aadhaar-grade Privacy
+                  </div>
+                </div>
+              </div>
+
+              {/* Glassmorphism stats */}
+              <div className="lg:col-span-5">
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    {
+                      icon: Users,
+                      label: "Citizens Served",
+                      value: "2.4 Cr",
+                      trend: "+12.4%",
+                      accent: "from-[#1E3A8A]/40 to-[#1E3A8A]/0",
+                    },
+                    {
+                      icon: IndianRupee,
+                      label: "DBT Disbursed",
+                      value: "₹48,200 Cr",
+                      trend: "+8.1%",
+                      accent: "from-[#10B981]/40 to-[#10B981]/0",
+                    },
+                    {
+                      icon: Layers,
+                      label: "Active Schemes",
+                      value: "30+",
+                      trend: "Live",
+                      accent: "from-[#F59E0B]/40 to-[#F59E0B]/0",
+                    },
+                    {
+                      icon: TrendingUp,
+                      label: "Match Accuracy",
+                      value: "98.6%",
+                      trend: "AI-graded",
+                      accent: "from-white/30 to-white/0",
+                    },
+                  ].map((s) => (
+                    <div
+                      key={s.label}
+                      className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-xl p-5 hover:bg-white/[0.1] transition group"
+                    >
+                      <div
+                        className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${s.accent} blur-2xl`}
+                      />
+                      <div className="relative">
+                        <div className="flex items-center justify-between">
+                          <div className="w-9 h-9 rounded-lg bg-white/10 grid place-items-center">
+                            <s.icon className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-[10px] font-semibold text-[#10B981] bg-[#10B981]/15 px-1.5 py-0.5 rounded">
+                            {s.trend}
+                          </span>
+                        </div>
+                        <div className="mt-4 text-[26px] font-bold tracking-tight">{s.value}</div>
+                        <div className="text-[11px] text-white/60 mt-0.5">{s.label}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* MAIN DASHBOARD */}
-      <main id="eligibility-form" 
-         className={`max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-24 relative z-10 
-        ${activeTab === 'engine' ? '-mt-12' : 'pt-8'}`} >
-        {activeTab === 'engine' && (
-        <form onSubmit={handleEvaluate} className="grid grid-cols-12 gap-6">
-          {/* LEFT SIDEBAR */}
-          <aside className="hidden lg:block col-span-3">
-            <div className="sticky top-24 space-y-4">
-              <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">Citizen Profile</div>
-                <div className="mt-3 flex items-end justify-between">
-                  <div className="text-[34px] font-bold tracking-tight text-[#0B2240]">{completion.overall}%</div>
-                  <div className="text-[11px] text-[#64748B] mb-1.5">complete</div>
-                </div>
-                <div className="mt-2 h-1.5 rounded-full bg-[#F1F5F9] overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#1E3A8A] to-[#10B981] transition-all duration-500"
-                    style={{ width: `${completion.overall}%` }}
-                  />
-                </div>
-              </div>
-
-              <nav className="rounded-2xl bg-white border border-[#E2E8F0] p-2 shadow-sm">
-                {sections.map((s) => (
-                  <a
-                    key={s.id}
-                    href={`#${s.id}`}
-                    onClick={() => setActiveSection(s.id)}
-                    className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition ${
-                      activeSection === s.id
-                        ? "bg-[#0B2240] text-white"
-                        : "text-[#475569] hover:bg-[#F8FAFC]"
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-lg grid place-items-center ${
-                      activeSection === s.id ? "bg-white/10" : "bg-[#F1F5F9] group-hover:bg-white"
-                    }`}>
-                      <s.icon className="w-4 h-4" />
+      <main
+        id="eligibility-form"
+        className={`max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-24 relative z-10 
+        ${activeTab === "engine" ? "-mt-12" : "pt-8"}`}
+      >
+        {activeTab === "engine" && (
+          <form onSubmit={handleEvaluate} className="grid grid-cols-12 gap-6">
+            {/* LEFT SIDEBAR */}
+            <aside className="hidden lg:block col-span-3">
+              <div className="sticky top-24 space-y-4">
+                <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
+                    Citizen Profile
+                  </div>
+                  <div className="mt-3 flex items-end justify-between">
+                    <div className="text-[34px] font-bold tracking-tight text-[#0B2240]">
+                      {completion.overall}%
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="truncate">{s.label}</div>
-                      <div className={`mt-1 h-1 rounded-full overflow-hidden ${activeSection === s.id ? "bg-white/15" : "bg-[#F1F5F9]"}`}>
-                        <div
-                          className={`h-full transition-all ${activeSection === s.id ? "bg-[#F59E0B]" : "bg-[#10B981]"}`}
-                          style={{ width: `${s.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  </a>
-                ))}
-              </nav>
-
-              <div className="rounded-2xl bg-gradient-to-br from-[#0B2240] to-[#1E3A8A] p-5 text-white relative overflow-hidden">
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#F59E0B]/20 rounded-full blur-2xl" />
-                <Shield className="w-6 h-6 text-[#F59E0B] relative" />
-                <div className="mt-3 text-[13px] font-semibold relative">Your data is protected</div>
-                <div className="text-[11px] text-white/70 mt-1 relative leading-relaxed">
-                  All submissions are encrypted end-to-end and used only for eligibility computation under
-                  GoT data protection guidelines.
+                    <div className="text-[11px] text-[#64748B] mb-1.5">complete</div>
+                  </div>
+                  <div className="mt-2 h-1.5 rounded-full bg-[#F1F5F9] overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#1E3A8A] to-[#10B981] transition-all duration-500"
+                      style={{ width: `${completion.overall}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
-          </aside>
 
-          {/* MAIN FORM */}
-          <div className="col-span-12 lg:col-span-6 space-y-6">
-            {/* Section A */}
-            <SectionCard
-            id="personal"
-            icon={User}
-            tone="indigo"
-            eyebrow="Section 01"
-            title="Personal Information"
-            desc="Demographic profile used for scheme eligibility matching."
-            progress={completion.personal}
-          >
-            {/* Name & Age Row */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Full Name" required>
-                <input
-                  ref={nameRef}
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={inputCls}
-                />
-              </Field>
-              <Field label="Age (Years)" required>
-                <input
-                  ref={ageRef}
-                  type="number"
-                  value={formData.age}
-                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                  className={inputCls}
-                />
-              </Field>
-            </div>
-
-            {/* Gender */}
-            <Field label="Gender" required>
-              <div ref={genderRef} className="grid grid-cols-3 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
-                {["Female", "Male", "Transgender"].map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, gender: g })}
-                    className={`py-2.5 text-[12px] font-semibold rounded-lg transition-all ${
-                      formData.gender === g ? "bg-white text-[#0B2240] shadow-sm ring-1 ring-[#E2E8F0]" : "text-[#64748B] hover:text-[#0B2240]"
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-            </Field>
-
-            {/* Religion & Caste Row */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Religion" required>
-                <select
-                  ref={religionRef}
-                  value={formData.religion}
-                  onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
-                  className={inputCls}
-                >
-                  <option value="">Select religion</option>
-                  <option>Hindu</option>
-                  <option>Muslim</option>
-                  <option>Christian</option>
-                  <option>Other</option>
-                </select>
-              </Field>
-              <Field label="Caste Category" required>
-                <select
-                  ref={casteRef}
-                  value={formData.caste}
-                  onChange={(e) => setFormData({ ...formData, caste: e.target.value })}
-                  className={inputCls}
-                >
-                  <option value="">Select category</option>
-                  <option>SC</option><option>ST</option><option>BC</option>
-                  <option>EBC</option><option>Minority</option><option>General</option>
-                </select>
-              </Field>
-            </div>
-
-            {/* Marital Status Only */}
-            <Field label="Marital Status">
-              <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
-                {[{ label: "Married", value: true }, { label: "Unmarried", value: false }].map((o) => (
-                  <button
-                    key={o.label}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, is_married: o.value })}
-                    className={`py-2.5 text-[12px] font-semibold rounded-lg transition-all ${
-                      formData.is_married === o.value ? "bg-white text-[#0B2240] shadow-sm ring-1 ring-[#E2E8F0]" : "text-[#64748B] hover:text-[#0B2240]"
-                    }`}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            </Field>
-
-            {/* Boolean Flags in a cleaner Grid */}
-            <div className="grid sm:grid-cols-2 gap-y-3 gap-x-6 pt-2 border-t border-[#F1F5F9] mt-2">
-              <Toggle label="Head of Family" checked={formData.is_head_of_family} onChange={(v) => setFormData({...formData, is_head_of_family: v})} />
-              <Toggle label="Govt. Employee" checked={formData.is_government_employee} onChange={(v) => setFormData({...formData, is_government_employee: v})} />
-              <Toggle label="Permanent Resident" checked={formData.is_permanent_resident} onChange={(v) => setFormData({...formData, is_permanent_resident: v})} />
-              <Toggle label="About to marry" checked={formData.is_about_to_marry} onChange={(v) => setFormData({...formData, is_about_to_marry: v})} />
-            </div>
-          </SectionCard>
-
-            {/* Section B */}
-            <SectionCard
-              id="socio"
-              icon={Wallet}
-              tone="emerald"
-              eyebrow="Section 02"
-              title="Socio-Economic Information"
-              desc="Income, housing, and household status used to compute welfare and subsidy eligibility."
-              progress={completion.socio}
-            >
-              <Field label="Residence Type">
-                <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
-                  {[{ label: "Rural", value: true }, { label: "Urban", value: false }].map((o) => (
-                    <button
-                      key={o.label}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, is_rural: o.value })}
-                      className={`py-2.5 text-[12px] font-semibold rounded-lg transition-all ${
-                        formData.is_rural === o.value
-                          ? "bg-white text-[#0B2240] shadow-sm ring-1 ring-[#E2E8F0]"
-                          : "text-[#64748B] hover:text-[#0B2240]"
+                <nav className="rounded-2xl bg-white border border-[#E2E8F0] p-2 shadow-sm">
+                  {sections.map((s) => (
+                    <a
+                      key={s.id}
+                      href={`#${s.id}`}
+                      onClick={() => setActiveSection(s.id)}
+                      className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition ${
+                        activeSection === s.id
+                          ? "bg-[#0B2240] text-white"
+                          : "text-[#475569] hover:bg-[#F8FAFC]"
                       }`}
                     >
-                      {o.label}
-                    </button>
+                      <div
+                        className={`w-8 h-8 rounded-lg grid place-items-center ${
+                          activeSection === s.id
+                            ? "bg-white/10"
+                            : "bg-[#F1F5F9] group-hover:bg-white"
+                        }`}
+                      >
+                        <s.icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate">{s.label}</div>
+                        <div
+                          className={`mt-1 h-1 rounded-full overflow-hidden ${activeSection === s.id ? "bg-white/15" : "bg-[#F1F5F9]"}`}
+                        >
+                          <div
+                            className={`h-full transition-all ${activeSection === s.id ? "bg-[#F59E0B]" : "bg-[#10B981]"}`}
+                            style={{ width: `${s.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </a>
                   ))}
-                </div>
-              </Field>
+                </nav>
 
-              <Field label="Annual Family Income (INR)" required>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B] text-[13px]">₹</span>
-                  <input
-                    ref={incomeRef}
-                    type="number"
-                    value={formData.annual_income}
-                    onChange={(e) => setFormData({ ...formData, annual_income: e.target.value })}
-                    placeholder="e.g. 180000"
-                    className={`${inputCls} pl-8`}
+                <div className="rounded-2xl bg-gradient-to-br from-[#0B2240] to-[#1E3A8A] p-5 text-white relative overflow-hidden">
+                  <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#F59E0B]/20 rounded-full blur-2xl" />
+                  <Shield className="w-6 h-6 text-[#F59E0B] relative" />
+                  <div className="mt-3 text-[13px] font-semibold relative">
+                    Your data is protected
+                  </div>
+                  <div className="text-[11px] text-white/70 mt-1 relative leading-relaxed">
+                    All submissions are encrypted end-to-end and used only for eligibility
+                    computation under GoT data protection guidelines.
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            {/* MAIN FORM */}
+            <div className="col-span-12 lg:col-span-6 space-y-6">
+              {/* Section A */}
+              <SectionCard
+                id="personal"
+                icon={User}
+                tone="indigo"
+                eyebrow="Section 01"
+                title="Personal Information"
+                desc="Demographic profile used for scheme eligibility matching."
+                progress={completion.personal}
+              >
+                {/* Name & Age Row */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field label="Full Name" required>
+                    <input
+                      ref={nameRef}
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Age (Years)" required>
+                    <input
+                      ref={ageRef}
+                      type="number"
+                      value={formData.age}
+                      onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                      className={inputCls}
+                    />
+                  </Field>
+                </div>
+
+                {/* Gender */}
+                <Field label="Gender" required>
+                  <div
+                    ref={genderRef}
+                    className="grid grid-cols-3 gap-2 p-1 bg-[#F1F5F9] rounded-xl"
+                  >
+                    {["Female", "Male", "Transgender"].map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, gender: g })}
+                        className={`py-2.5 text-[12px] font-semibold rounded-lg transition-all ${
+                          formData.gender === g
+                            ? "bg-white text-[#0B2240] shadow-sm ring-1 ring-[#E2E8F0]"
+                            : "text-[#64748B] hover:text-[#0B2240]"
+                        }`}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+
+                {/* Religion & Caste Row */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field label="Religion" required>
+                    <select
+                      ref={religionRef}
+                      value={formData.religion}
+                      onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
+                      className={inputCls}
+                    >
+                      <option value="">Select religion</option>
+                      <option>Hindu</option>
+                      <option>Muslim</option>
+                      <option>Christian</option>
+                      <option>Other</option>
+                    </select>
+                  </Field>
+                  <Field label="Caste Category" required>
+                    <select
+                      ref={casteRef}
+                      value={formData.caste}
+                      onChange={(e) => setFormData({ ...formData, caste: e.target.value })}
+                      className={inputCls}
+                    >
+                      <option value="">Select category</option>
+                      <option>SC</option>
+                      <option>ST</option>
+                      <option>BC</option>
+                      <option>EBC</option>
+                      <option>Minority</option>
+                      <option>General</option>
+                    </select>
+                  </Field>
+                </div>
+
+                {/* Marital Status Only */}
+                <Field label="Marital Status">
+                  <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
+                    {[
+                      { label: "Married", value: true },
+                      { label: "Unmarried", value: false },
+                    ].map((o) => (
+                      <button
+                        key={o.label}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, is_married: o.value })}
+                        className={`py-2.5 text-[12px] font-semibold rounded-lg transition-all ${
+                          formData.is_married === o.value
+                            ? "bg-white text-[#0B2240] shadow-sm ring-1 ring-[#E2E8F0]"
+                            : "text-[#64748B] hover:text-[#0B2240]"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+
+                {/* Boolean Flags in a cleaner Grid */}
+                <div className="grid sm:grid-cols-2 gap-y-3 gap-x-6 pt-2 border-t border-[#F1F5F9] mt-2">
+                  <Toggle
+                    label="Head of Family"
+                    checked={formData.is_head_of_family}
+                    onChange={(v) => setFormData({ ...formData, is_head_of_family: v })}
+                  />
+                  <Toggle
+                    label="Govt. Employee"
+                    checked={formData.is_government_employee}
+                    onChange={(v) => setFormData({ ...formData, is_government_employee: v })}
+                  />
+                  <Toggle
+                    label="Permanent Resident"
+                    checked={formData.is_permanent_resident}
+                    onChange={(v) => setFormData({ ...formData, is_permanent_resident: v })}
+                  />
+                  <Toggle
+                    label="About to marry"
+                    checked={formData.is_about_to_marry}
+                    onChange={(v) => setFormData({ ...formData, is_about_to_marry: v })}
                   />
                 </div>
-              </Field>
+              </SectionCard>
 
-              <Toggle label="Has LPG Connection" checked={formData.has_lpg_connection} onChange={(v) => setFormData({...formData, has_lpg_connection: v})} />
-
-              <Field label="Electricity Consumption (units/month)">
-                <input
-                  type="number"
-                  value={formData.electricity_consumption}
-                  onChange={(e) => setFormData({ ...formData, electricity_consumption: e.target.value })}
-                  placeholder="e.g. 120"
-                  className={inputCls}
-                />
-              </Field>
-
-              <div className="space-y-2">
-                <Toggle
-                  label="Has pending electricity bill dues"
-                  checked={formData.has_electricity_bill_dues}
-                  onChange={(v) => setFormData({ ...formData, has_electricity_bill_dues: v })}
-                />
-                <Toggle
-                  label="Holds White Ration Card"
-                  checked={formData.has_white_ration_card}
-                  onChange={(v) => setFormData({ ...formData, has_white_ration_card: v })}
-                />
-                <Toggle
-                  label="Owns a Pucca House"
-                  checked={formData.owns_pucca_house}
-                  onChange={(v) => setFormData({ ...formData, owns_pucca_house: v })}
-                />
-                <Toggle
-                  label="Income Tax Payer"
-                  checked={formData.is_income_tax_payer}
-                  onChange={(v) => setFormData({ ...formData, is_income_tax_payer: v })}
-                  warning
-                />
-              </div>
-            </SectionCard>
-
-             {/* Section C */}
-            <SectionCard
-            id="education"
-            icon={GraduationCap}
-            tone="amber"
-            eyebrow="Section 03"
-            title="Education & Agriculture"
-            desc="Academic and agricultural details for targeted scholarship and farmer schemes."
-            progress={completion.eduAgri}
-          >
-            <Field label="Current Occupation">
-              <select
-                value={formData.occupation}
-                onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                className={inputCls}
+              {/* Section B */}
+              <SectionCard
+                id="socio"
+                icon={Wallet}
+                tone="emerald"
+                eyebrow="Section 02"
+                title="Socio-Economic Information"
+                desc="Income, housing, and household status used to compute welfare and subsidy eligibility."
+                progress={completion.socio}
               >
-                <option value="">Select Occupation</option>
-                <option value="Student">Student</option>
-                <option value="Farmer">Farmer</option>
-                <option value="Employed">Employed</option>
-                <option value="Unemployed">Unemployed</option>
-              </select>
-            </Field>
-
-            {/* STUDENT SECTION */}
-            {formData.occupation === "Student" && (
-              <div className="mt-4 space-y-4 border-t pt-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Field label="Class / Level"><input type="number" value={formData.class_level} onChange={(e) => setFormData({...formData, class_level: e.target.value})} className={inputCls} /></Field>
-                  <Field label="Attendance %"><input type="number" value={formData.attendance_percent} onChange={(e) => setFormData({...formData, attendance_percent: e.target.value})} className={inputCls} /></Field>
-                </div>
-                
-                <Toggle label="Is Graduate" checked={formData.is_graduate} onChange={(v) => setFormData({...formData, is_graduate: v})} />
-                <Field label="Graduation Percentage"><input type="number" value={formData.graduation_percentage} onChange={(e) => setFormData({...formData, graduation_percentage: e.target.value})} className={inputCls} /></Field>
-                <Toggle label="Final Year Student" checked={formData.is_final_year_student} onChange={(v) => setFormData({...formData, is_final_year_student: v})} />
-                
-                <div className="bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0] space-y-4">
-                  <Toggle label="Has confirmed overseas admission" checked={formData.has_confirmed_admission} onChange={(v) => setFormData({...formData, has_confirmed_admission: v})} />
-                  {formData.has_confirmed_admission && (
-                    <>
-                      <Field label="Target Country"><input value={formData.target_country} onChange={(e) => setFormData({...formData, target_country: e.target.value})} className={inputCls} /></Field>
-                      <div className="grid grid-cols-2 gap-4">
-                        <Field label="GRE Score"><input type="number" value={formData.gre_score} onChange={(e) => setFormData({...formData, gre_score: e.target.value})} className={inputCls} /></Field>
-                        <Field label="GMAT Score"><input type="number" value={formData.gmat_score} onChange={(e) => setFormData({...formData, gmat_score: e.target.value})} className={inputCls} /></Field>
-                        <Field label="IELTS Score"><input type="number" value={formData.ielts_score} onChange={(e) => setFormData({...formData, ielts_score: e.target.value})} className={inputCls} /></Field>
-                        <Field label="TOEFL Score"><input type="number" value={formData.toefl_score} onChange={(e) => setFormData({...formData, toefl_score: e.target.value})} className={inputCls} /></Field>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* FARMER SECTION */}
-            {formData.occupation === "Farmer" && (
-              <div className="mt-4 space-y-4 border-t pt-4">
-                <Toggle label="Is Pattadar" checked={formData.is_pattadar} onChange={(v) => setFormData({...formData, is_pattadar: v})} />
-                <Field label="Cultivable Land (Acres)">
-                  <input type="number" value={formData.has_cultivable_land} onChange={(e) => setFormData({...formData, has_cultivable_land: e.target.value})} className={inputCls} />
+                <Field label="Residence Type">
+                  <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
+                    {[
+                      { label: "Rural", value: true },
+                      { label: "Urban", value: false },
+                    ].map((o) => (
+                      <button
+                        key={o.label}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, is_rural: o.value })}
+                        className={`py-2.5 text-[12px] font-semibold rounded-lg transition-all ${
+                          formData.is_rural === o.value
+                            ? "bg-white text-[#0B2240] shadow-sm ring-1 ring-[#E2E8F0]"
+                            : "text-[#64748B] hover:text-[#0B2240]"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
                 </Field>
-              </div>
-            )}
-          </SectionCard>
 
-          {/* Section D: Welfare Factors */}
-          <SectionCard
-            id="welfare"
-            icon={Shield}
-            tone="rose"
-            eyebrow="Section 04"
-            title="Welfare Factors"
-            desc="Special categories for targeted support."
-            progress={completion.welfare}
-          >
-            <div className="space-y-3">
-              <Toggle label="Widow" checked={formData.is_widow} onChange={(v) => setFormData({...formData, is_widow: v})} />
-              <Toggle label="Single Woman" checked={formData.is_single_woman} onChange={(v) => setFormData({...formData, is_single_woman: v})} />
-              <Toggle label="Pregnant" checked={formData.is_pregnant} onChange={(v) => setFormData({...formData, is_pregnant: v})} />
-              <Toggle label="Lactating" checked={formData.is_lactating} onChange={(v) => setFormData({...formData, is_lactating: v})} />
-              <Toggle label="Specific Medical Condition" checked={formData.has_specific_medical_condition} onChange={(v) => setFormData({...formData, has_specific_medical_condition: v})} />
-              <Toggle label="Person with Disability" checked={formData.is_disabled} onChange={(v) => setFormData({...formData, is_disabled: v})} />
-            </div>
-          </SectionCard>
+                <Field label="Annual Family Income (INR)" required>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B] text-[13px]">
+                      ₹
+                    </span>
+                    <input
+                      ref={incomeRef}
+                      type="number"
+                      value={formData.annual_income}
+                      onChange={(e) => setFormData({ ...formData, annual_income: e.target.value })}
+                      placeholder="e.g. 180000"
+                      className={`${inputCls} pl-8`}
+                    />
+                  </div>
+                </Field>
 
-            
+                <Toggle
+                  label="Has LPG Connection"
+                  checked={formData.has_lpg_connection}
+                  onChange={(v) => setFormData({ ...formData, has_lpg_connection: v })}
+                />
 
-            {/* SUBMIT */}
-            <div className="rounded-2xl bg-white border border-[#E2E8F0] p-6 shadow-sm">
-              {errorMessage && (
-                <div className="mb-4 flex items-start gap-3 p-3.5 rounded-xl bg-red-50 border border-red-100 text-red-700">
-                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                  <div className="text-[13px] font-medium">{errorMessage}</div>
+                <Field label="Electricity Consumption (units/month)">
+                  <input
+                    type="number"
+                    value={formData.electricity_consumption}
+                    onChange={(e) =>
+                      setFormData({ ...formData, electricity_consumption: e.target.value })
+                    }
+                    placeholder="e.g. 120"
+                    className={inputCls}
+                  />
+                </Field>
+
+                <div className="space-y-2">
+                  <Toggle
+                    label="Has pending electricity bill dues"
+                    checked={formData.has_electricity_bill_dues}
+                    onChange={(v) => setFormData({ ...formData, has_electricity_bill_dues: v })}
+                  />
+                  <Toggle
+                    label="Holds White Ration Card"
+                    checked={formData.has_white_ration_card}
+                    onChange={(v) => setFormData({ ...formData, has_white_ration_card: v })}
+                  />
+                  <Toggle
+                    label="Owns a Pucca House"
+                    checked={formData.owns_pucca_house}
+                    onChange={(v) => setFormData({ ...formData, owns_pucca_house: v })}
+                  />
+                  <Toggle
+                    label="Income Tax Payer"
+                    checked={formData.is_income_tax_payer}
+                    onChange={(v) => setFormData({ ...formData, is_income_tax_payer: v })}
+                    warning
+                  />
                 </div>
-              )}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 justify-between">
-                <div className="flex items-center gap-3 text-[12px] text-[#64748B]">
-                  <Lock className="w-4 h-4 text-[#10B981]" />
-                  Processed securely. Never shared without consent.
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#0B2240] text-white font-semibold text-[14px] shadow-lg shadow-[#0B2240]/20 hover:bg-[#1E3A8A] hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Evaluating profile…
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#F59E0B]" />
-                      Check eligible schemes
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+              </SectionCard>
 
-          {/* RIGHT SUMMARY */}
-          <aside className="hidden lg:block col-span-3">
-            <div className="sticky top-24 space-y-4">
-              <SummaryCard completion={completion} eligibleCount={eligibleCount} totalMatched={matchedSchemes?.length ?? 0} />
+              {/* Section C */}
+              <SectionCard
+                id="education"
+                icon={GraduationCap}
+                tone="amber"
+                eyebrow="Section 03"
+                title="Education & Agriculture"
+                desc="Academic and agricultural details for targeted scholarship and farmer schemes."
+                progress={completion.eduAgri}
+              >
+                <Field label="Current Occupation">
+                  <select
+                    value={formData.occupation}
+                    onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                    className={inputCls}
+                  >
+                    <option value="">Select Occupation</option>
+                    <option value="Student">Student</option>
+                    <option value="Farmer">Farmer</option>
+                    <option value="Employed">Employed</option>
+                    <option value="Unemployed">Unemployed</option>
+                  </select>
+                </Field>
 
-              <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">Popular Schemes</div>
-                <div className="mt-3 space-y-2">
-                  {[
-                    { name: "Rythu Bandhu", dept: "Agriculture", color: "bg-[#10B981]/10 text-[#047857]" },
-                    { name: "Aasara Pension", dept: "Welfare", color: "bg-[#1E3A8A]/10 text-[#1E3A8A]" },
-                    { name: "Kalyana Lakshmi", dept: "Women & Child", color: "bg-[#F59E0B]/10 text-[#B45309]" },
-                  ].map((s) => (
-                    <div key={s.name} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F8FAFC] transition cursor-pointer">
-                      <div>
-                        <div className="text-[13px] font-semibold text-[#0F172A]">{s.name}</div>
-                        <div className="text-[10px] text-[#64748B] uppercase tracking-wider">{s.dept}</div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#94A3B8]" />
+                {/* STUDENT SECTION */}
+                {formData.occupation === "Student" && (
+                  <div className="mt-4 space-y-4 border-t pt-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="Class / Level">
+                        <input
+                          type="number"
+                          value={formData.class_level}
+                          onChange={(e) =>
+                            setFormData({ ...formData, class_level: e.target.value })
+                          }
+                          className={inputCls}
+                        />
+                      </Field>
+                      <Field label="Attendance %">
+                        <input
+                          type="number"
+                          value={formData.attendance_percent}
+                          onChange={(e) =>
+                            setFormData({ ...formData, attendance_percent: e.target.value })
+                          }
+                          className={inputCls}
+                        />
+                      </Field>
                     </div>
-                  ))}
+
+                    <Toggle
+                      label="Is Graduate"
+                      checked={formData.is_graduate}
+                      onChange={(v) => setFormData({ ...formData, is_graduate: v })}
+                    />
+                    <Field label="Graduation Percentage">
+                      <input
+                        type="number"
+                        value={formData.graduation_percentage}
+                        onChange={(e) =>
+                          setFormData({ ...formData, graduation_percentage: e.target.value })
+                        }
+                        className={inputCls}
+                      />
+                    </Field>
+                    <Toggle
+                      label="Final Year Student"
+                      checked={formData.is_final_year_student}
+                      onChange={(v) => setFormData({ ...formData, is_final_year_student: v })}
+                    />
+
+                    <div className="bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0] space-y-4">
+                      <Toggle
+                        label="Has confirmed overseas admission"
+                        checked={formData.has_confirmed_admission}
+                        onChange={(v) => setFormData({ ...formData, has_confirmed_admission: v })}
+                      />
+                      {formData.has_confirmed_admission && (
+                        <>
+                          <Field label="Target Country">
+                            <input
+                              value={formData.target_country}
+                              onChange={(e) =>
+                                setFormData({ ...formData, target_country: e.target.value })
+                              }
+                              className={inputCls}
+                            />
+                          </Field>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Field label="GRE Score">
+                              <input
+                                type="number"
+                                value={formData.gre_score}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, gre_score: e.target.value })
+                                }
+                                className={inputCls}
+                              />
+                            </Field>
+                            <Field label="GMAT Score">
+                              <input
+                                type="number"
+                                value={formData.gmat_score}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, gmat_score: e.target.value })
+                                }
+                                className={inputCls}
+                              />
+                            </Field>
+                            <Field label="IELTS Score">
+                              <input
+                                type="number"
+                                value={formData.ielts_score}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, ielts_score: e.target.value })
+                                }
+                                className={inputCls}
+                              />
+                            </Field>
+                            <Field label="TOEFL Score">
+                              <input
+                                type="number"
+                                value={formData.toefl_score}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, toefl_score: e.target.value })
+                                }
+                                className={inputCls}
+                              />
+                            </Field>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* FARMER SECTION */}
+                {formData.occupation === "Farmer" && (
+                  <div className="mt-4 space-y-4 border-t pt-4">
+                    <Toggle
+                      label="Is Pattadar"
+                      checked={formData.is_pattadar}
+                      onChange={(v) => setFormData({ ...formData, is_pattadar: v })}
+                    />
+                    <Field label="Cultivable Land (Acres)">
+                      <input
+                        type="number"
+                        value={formData.has_cultivable_land}
+                        onChange={(e) =>
+                          setFormData({ ...formData, has_cultivable_land: e.target.value })
+                        }
+                        className={inputCls}
+                      />
+                    </Field>
+                  </div>
+                )}
+              </SectionCard>
+
+              {/* Section D: Welfare Factors */}
+              <SectionCard
+                id="welfare"
+                icon={Shield}
+                tone="rose"
+                eyebrow="Section 04"
+                title="Welfare Factors"
+                desc="Special categories for targeted support."
+                progress={completion.welfare}
+              >
+                <div className="space-y-3">
+                  <Toggle
+                    label="Widow"
+                    checked={formData.is_widow}
+                    onChange={(v) => setFormData({ ...formData, is_widow: v })}
+                  />
+                  <Toggle
+                    label="Single Woman"
+                    checked={formData.is_single_woman}
+                    onChange={(v) => setFormData({ ...formData, is_single_woman: v })}
+                  />
+                  <Toggle
+                    label="Pregnant"
+                    checked={formData.is_pregnant}
+                    onChange={(v) => setFormData({ ...formData, is_pregnant: v })}
+                  />
+                  <Toggle
+                    label="Lactating"
+                    checked={formData.is_lactating}
+                    onChange={(v) => setFormData({ ...formData, is_lactating: v })}
+                  />
+                  <Toggle
+                    label="Specific Medical Condition"
+                    checked={formData.has_specific_medical_condition}
+                    onChange={(v) =>
+                      setFormData({ ...formData, has_specific_medical_condition: v })
+                    }
+                  />
+                  <Toggle
+                    label="Person with Disability"
+                    checked={formData.is_disabled}
+                    onChange={(v) => setFormData({ ...formData, is_disabled: v })}
+                  />
+                </div>
+              </SectionCard>
+
+              {/* SUBMIT */}
+              <div className="rounded-2xl bg-white border border-[#E2E8F0] p-6 shadow-sm">
+                {errorMessage && (
+                  <div className="mb-4 flex items-start gap-3 p-3.5 rounded-xl bg-red-50 border border-red-100 text-red-700">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div className="text-[13px] font-medium">{errorMessage}</div>
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 justify-between">
+                  <div className="flex items-center gap-3 text-[12px] text-[#64748B]">
+                    <Lock className="w-4 h-4 text-[#10B981]" />
+                    Processed securely. Never shared without consent.
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#0B2240] text-white font-semibold text-[14px] shadow-lg shadow-[#0B2240]/20 hover:bg-[#1E3A8A] hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Evaluating profile…
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+                        Check eligible schemes
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
-          </aside>
-        </form>   
-        )}    
+
+            {/* RIGHT SUMMARY */}
+            <aside className="hidden lg:block col-span-3">
+              <div className="sticky top-24 space-y-4">
+                <SummaryCard
+                  completion={completion}
+                  eligibleCount={eligibleCount}
+                  totalMatched={matchedSchemes?.length ?? 0}
+                />
+
+                <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
+                    Popular Schemes
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {[
+                      {
+                        name: "Rythu Bandhu",
+                        dept: "Agriculture",
+                        color: "bg-[#10B981]/10 text-[#047857]",
+                      },
+                      {
+                        name: "Aasara Pension",
+                        dept: "Welfare",
+                        color: "bg-[#1E3A8A]/10 text-[#1E3A8A]",
+                      },
+                      {
+                        name: "Kalyana Lakshmi",
+                        dept: "Women & Child",
+                        color: "bg-[#F59E0B]/10 text-[#B45309]",
+                      },
+                    ].map((s) => (
+                      <div
+                        key={s.name}
+                        className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F8FAFC] transition cursor-pointer"
+                      >
+                        <div>
+                          <div className="text-[13px] font-semibold text-[#0F172A]">{s.name}</div>
+                          <div className="text-[10px] text-[#64748B] uppercase tracking-wider">
+                            {s.dept}
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#94A3B8]" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </form>
+        )}
 
         {/* RESULTS */}
-        {activeTab === 'engine' && matchedSchemes !== null && (
+        {activeTab === "engine" && matchedSchemes !== null && (
           <section id="results" className="mt-16 scroll-mt-24">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
               <div>
@@ -884,7 +1156,10 @@ function SarthiPortal() {
                 </p>
               </div>
               {eligibleCount > 0 && (
-                <a href="#eligible" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#10B981] text-white font-semibold text-[13px] hover:bg-[#059669] transition">
+                <a
+                  href="#eligible"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#10B981] text-white font-semibold text-[13px] hover:bg-[#059669] transition"
+                >
                   View {eligibleCount} eligible <ArrowRight className="w-4 h-4" />
                 </a>
               )}
@@ -895,8 +1170,12 @@ function SarthiPortal() {
                 <div className="w-14 h-14 rounded-2xl bg-[#F1F5F9] grid place-items-center mx-auto">
                   <Search className="w-6 h-6 text-[#64748B]" />
                 </div>
-                <div className="mt-4 text-[16px] font-semibold text-[#0F172A]">No matching schemes found</div>
-                <div className="text-[13px] text-[#64748B] mt-1">Try adjusting your profile to discover more benefits.</div>
+                <div className="mt-4 text-[16px] font-semibold text-[#0F172A]">
+                  No matching schemes found
+                </div>
+                <div className="text-[13px] text-[#64748B] mt-1">
+                  Try adjusting your profile to discover more benefits.
+                </div>
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
@@ -913,44 +1192,56 @@ function SarthiPortal() {
                     <Award className="w-5 h-5 text-[#10B981]" />
                   </div>
                   <div>
-                    <h3 className="text-[22px] font-bold tracking-tight text-[#0B2240]">Fully Eligible Schemes</h3>
-                    <div className="text-[13px] text-[#64748B]">You qualify for all criteria. Apply directly below.</div>
+                    <h3 className="text-[22px] font-bold tracking-tight text-[#0B2240]">
+                      Fully Eligible Schemes
+                    </h3>
+                    <div className="text-[13px] text-[#64748B]">
+                      You qualify for all criteria. Apply directly below.
+                    </div>
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {matchedSchemes.filter((s) => s.percentage === 100).map((scheme, idx) => (
-                    <EligibleCard key={idx} scheme={scheme} />
-                  ))}
+                  {matchedSchemes
+                    .filter((s) => s.percentage === 100)
+                    .map((scheme, idx) => (
+                      <EligibleCard key={idx} scheme={scheme} />
+                    ))}
                 </div>
               </div>
             )}
           </section>
         )}
 
-           {/* SCHEMES TAB */}
-          {activeTab === 'schemes' && (
-            <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-              <h2 className="text-xl font-bold mb-6">Available Welfare Schemes</h2>
-              <SchemeList /> 
-            </div>
-          )}
-      
-            {/* APPLICATIONS TAB */}
-            {activeTab === 'applications' && (
-              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-                <h2 className="text-xl font-bold mb-4">My Applications</h2>
-                <ApplicationsTab />
-              </div>
-            )}
+        {/* SCHEMES TAB */}
+        {activeTab === "schemes" && (
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
+            <h2 className="text-xl font-bold mb-6">Available Welfare Schemes</h2>
+            <SchemeList />
+          </div>
+        )}
 
-            {/* FALLBACK/OTHER TABS */}
-            {(activeTab === 'notifications' || activeTab === 'help') && (
-              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-12 text-center shadow-sm">
-                <h3 className="text-lg font-bold text-[#0B2240]">Section under construction</h3>
-                <p className="text-[#64748B] mt-2">The {activeTab} section is currently being updated.</p>
-              </div>
-            )}   
+        {/* APPLICATIONS TAB */}
+        {activeTab === "applications" && (
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
+            <h2 className="text-xl font-bold mb-4">My Applications</h2>
+            <ApplicationsTab />
+          </div>
+        )}
+
+        {/* NOTIFICATIONS TAB */}
+        {activeTab === "notifications" && (
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
+            <NotificationsTab />
+          </div>
+        )}
+
+        {/* HELP TAB */}
+        {activeTab === "help" && (
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
+            <HelpTab />
+          </div>
+        )}
       </main>
 
       {/* FOOTER */}
@@ -959,19 +1250,26 @@ function SarthiPortal() {
           <div className="grid lg:grid-cols-12 gap-10">
             <div className="lg:col-span-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white to-white/70 text-[#0B2240] grid place-items-center font-bold">SR</div>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white to-white/70 text-[#0B2240] grid place-items-center font-bold">
+                  SR
+                </div>
                 <div>
                   <div className="text-[16px] font-bold">SARTHI</div>
-                  <div className="text-[10px] uppercase tracking-[0.14em] text-white/60">Government of Telangana</div>
+                  <div className="text-[10px] uppercase tracking-[0.14em] text-white/60">
+                    Government of Telangana
+                  </div>
                 </div>
               </div>
               <p className="mt-5 text-[13px] leading-relaxed text-white/70 max-w-sm">
-                A unified welfare delivery platform empowering every Telangana citizen to discover and
-                claim their rightful benefits through a single, secure profile.
+                A unified welfare delivery platform empowering every Telangana citizen to discover
+                and claim their rightful benefits through a single, secure profile.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {["ISO 27001", "Aadhaar Verified", "DigiLocker", "Bhashini"].map((b) => (
-                  <span key={b} className="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-white/8 border border-white/10 text-white/80">
+                  <span
+                    key={b}
+                    className="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-white/8 border border-white/10 text-white/80"
+                  >
                     {b}
                   </span>
                 ))}
@@ -979,48 +1277,105 @@ function SarthiPortal() {
             </div>
 
             <div className="lg:col-span-2">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">Platform</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                Platform
+              </div>
               <ul className="mt-4 space-y-2.5 text-[13px] text-white/80">
-                <li><a href="#" className="hover:text-white">About SARTHI</a></li>
-                <li><a href="#" className="hover:text-white">Scheme Directory</a></li>
-                <li><a href="#" className="hover:text-white">DBT Status</a></li>
-                <li><a href="#" className="hover:text-white">RTI Information</a></li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    About SARTHI
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Scheme Directory
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    DBT Status
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    RTI Information
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div className="lg:col-span-3">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">Departments</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                Departments
+              </div>
               <ul className="mt-4 space-y-2.5 text-[13px] text-white/80">
-                <li><a href="#" className="hover:text-white">Welfare & Tribal Affairs</a></li>
-                <li><a href="#" className="hover:text-white">Agriculture & Cooperation</a></li>
-                <li><a href="#" className="hover:text-white">Women & Child Development</a></li>
-                <li><a href="#" className="hover:text-white">Health & Family Welfare</a></li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Welfare & Tribal Affairs
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Agriculture & Cooperation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Women & Child Development
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Health & Family Welfare
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div className="lg:col-span-3 space-y-3">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">Get in Touch</div>
-              <div className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 grid place-items-center"><MapPin className="w-4 h-4" /></div>
-                <div className="text-[12px] text-white/80 leading-tight">Secretariat<br />Hyderabad — 500022</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                Get in Touch
               </div>
               <div className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 grid place-items-center"><Phone className="w-4 h-4" /></div>
+                <div className="w-8 h-8 rounded-lg bg-white/10 grid place-items-center">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div className="text-[12px] text-white/80 leading-tight">
+                  Secretariat
+                  <br />
+                  Hyderabad — 500022
+                </div>
+              </div>
+              <div className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/10 grid place-items-center">
+                  <Phone className="w-4 h-4" />
+                </div>
                 <div className="text-[12px] text-white/80">1800-425-0425 · 24×7</div>
               </div>
               <div className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 grid place-items-center"><Mail className="w-4 h-4" /></div>
+                <div className="w-8 h-8 rounded-lg bg-white/10 grid place-items-center">
+                  <Mail className="w-4 h-4" />
+                </div>
                 <div className="text-[12px] text-white/80">support-sarthi@telangana.gov.in</div>
               </div>
             </div>
           </div>
 
           <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-white/60">
-            <div>© {new Date().getFullYear()} Government of Telangana · Powered by Centre for Good Governance (CGG)</div>
+            <div>
+              © {new Date().getFullYear()} Government of Telangana · Powered by Centre for Good
+              Governance (CGG)
+            </div>
             <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-white">Privacy</a>
-              <a href="#" className="hover:text-white">Terms</a>
-              <a href="#" className="hover:text-white">Accessibility</a>
+              <a href="#" className="hover:text-white">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-white">
+                Terms
+              </a>
+              <a href="#" className="hover:text-white">
+                Accessibility
+              </a>
             </div>
           </div>
         </div>
@@ -1034,7 +1389,15 @@ function SarthiPortal() {
 const inputCls =
   "w-full px-3.5 py-2.5 text-[13px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] rounded-xl border border-[#E2E8F0] hover:border-[#CBD5E1] focus:outline-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/10 transition";
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
       <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
@@ -1046,8 +1409,16 @@ function Field({ label, required, children }: { label: string; required?: boolea
 }
 
 function Toggle({
-  label, checked, onChange, warning,
-}: { label: string; checked: boolean; onChange: (v: boolean) => void; warning?: boolean }) {
+  label,
+  checked,
+  onChange,
+  warning,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  warning?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -1060,18 +1431,31 @@ function Toggle({
           : "border-[#E2E8F0] bg-white hover:border-[#CBD5E1] hover:bg-[#F8FAFC]"
       }`}
     >
-      <span className={`text-[13px] font-medium text-left ${checked ? "text-[#0B2240]" : "text-[#475569]"}`}>
+      <span
+        className={`text-[13px] font-medium text-left ${checked ? "text-[#0B2240]" : "text-[#475569]"}`}
+      >
         {label}
       </span>
-      <span className={`relative w-9 h-5 rounded-full transition ${checked ? (warning ? "bg-[#F59E0B]" : "bg-[#10B981]") : "bg-[#E2E8F0]"}`}>
-        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-4" : ""}`} />
+      <span
+        className={`relative w-9 h-5 rounded-full transition ${checked ? (warning ? "bg-[#F59E0B]" : "bg-[#10B981]") : "bg-[#E2E8F0]"}`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-4" : ""}`}
+        />
       </span>
     </button>
   );
 }
 
 function SectionCard({
-  id, icon: Icon, tone, eyebrow, title, desc, progress, children,
+  id,
+  icon: Icon,
+  tone,
+  eyebrow,
+  title,
+  desc,
+  progress,
+  children,
 }: {
   id: string;
   icon: React.ElementType;
@@ -1095,12 +1479,16 @@ function SectionCard({
       className="scroll-mt-24 rounded-3xl bg-white border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow overflow-hidden"
     >
       <header className="flex items-start gap-4 p-6 border-b border-[#F1F5F9]">
-        <div className={`w-11 h-11 rounded-2xl grid place-items-center ${toneMap.bg} ${toneMap.text} shrink-0`}>
+        <div
+          className={`w-11 h-11 rounded-2xl grid place-items-center ${toneMap.bg} ${toneMap.text} shrink-0`}
+        >
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">{eyebrow}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+              {eyebrow}
+            </span>
             {progress === 100 && (
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 px-1.5 py-0.5 rounded">
                 <CheckCircle2 className="w-3 h-3" /> Complete
@@ -1110,7 +1498,10 @@ function SectionCard({
           <h3 className="mt-1 text-[17px] font-bold tracking-tight text-[#0B2240]">{title}</h3>
           <p className="text-[12.5px] text-[#64748B] mt-1 leading-relaxed">{desc}</p>
           <div className="mt-3 h-1 bg-[#F1F5F9] rounded-full overflow-hidden max-w-[200px]">
-            <div className={`h-full ${toneMap.bar} transition-all duration-500`} style={{ width: `${progress}%` }} />
+            <div
+              className={`h-full ${toneMap.bar} transition-all duration-500`}
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </div>
       </header>
@@ -1120,21 +1511,31 @@ function SectionCard({
 }
 
 function SummaryCard({
-  completion, eligibleCount, totalMatched,
-}: { completion: any; eligibleCount: number; totalMatched: number }) {
+  completion,
+  eligibleCount,
+  totalMatched,
+}: {
+  completion: any;
+  eligibleCount: number;
+  totalMatched: number;
+}) {
   const r = 36;
   const c = 2 * Math.PI * r;
   const dash = (completion.overall / 100) * c;
 
   return (
     <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">Live Summary</div>
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
+        Live Summary
+      </div>
       <div className="mt-4 flex items-center gap-4">
         <div className="relative w-[88px] h-[88px] shrink-0">
           <svg viewBox="0 0 88 88" className="w-full h-full -rotate-90">
             <circle cx="44" cy="44" r={r} stroke="#F1F5F9" strokeWidth="8" fill="none" />
             <circle
-              cx="44" cy="44" r={r}
+              cx="44"
+              cy="44"
+              r={r}
               stroke="url(#g1)"
               strokeWidth="8"
               fill="none"
@@ -1155,7 +1556,9 @@ function SummaryCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-[14px] font-semibold text-[#0F172A]">Profile readiness</div>
-          <div className="text-[11px] text-[#64748B] mt-0.5">Higher completion unlocks more accurate matches.</div>
+          <div className="text-[11px] text-[#64748B] mt-0.5">
+            Higher completion unlocks more accurate matches.
+          </div>
         </div>
       </div>
 
@@ -1166,7 +1569,9 @@ function SummaryCard({
         </div>
         <div className="rounded-xl bg-[#10B981]/10 p-3">
           <div className="text-[20px] font-bold text-[#047857]">{eligibleCount}</div>
-          <div className="text-[10px] uppercase tracking-wider text-[#047857]/80 mt-0.5">Eligible</div>
+          <div className="text-[10px] uppercase tracking-wider text-[#047857]/80 mt-0.5">
+            Eligible
+          </div>
         </div>
       </div>
     </div>
@@ -1174,6 +1579,7 @@ function SummaryCard({
 }
 
 function SchemeMatchCard({ scheme }: { scheme: Scheme }) {
+  const { id } = resolveSchemeIdentity(scheme);
   const pct = scheme.percentage ?? 0;
   const fully = pct === 100;
   const r = 22;
@@ -1187,12 +1593,22 @@ function SchemeMatchCard({ scheme }: { scheme: Scheme }) {
         <div className="relative w-[60px] h-[60px] shrink-0">
           <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90">
             <circle cx="30" cy="30" r={r} stroke="#F1F5F9" strokeWidth="5" fill="none" />
-            <circle cx="30" cy="30" r={r} stroke={color} strokeWidth="5" fill="none"
+            <circle
+              cx="30"
+              cy="30"
+              r={r}
+              stroke={color}
+              strokeWidth="5"
+              fill="none"
               strokeLinecap="round"
               strokeDasharray={`${dash} ${c}`}
-              className="transition-all duration-700" />
+              className="transition-all duration-700"
+            />
           </svg>
-          <div className="absolute inset-0 grid place-items-center text-[12px] font-bold" style={{ color }}>
+          <div
+            className="absolute inset-0 grid place-items-center text-[12px] font-bold"
+            style={{ color }}
+          >
             {pct}%
           </div>
         </div>
@@ -1224,12 +1640,23 @@ function SchemeMatchCard({ scheme }: { scheme: Scheme }) {
         </div>
       </div>
       <div className="mt-4 pt-4 border-t border-[#F1F5F9] flex items-center justify-between">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8]">Match Score</div>
-        <button className="text-[12px] font-semibold text-[#1E3A8A] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all">
-          View details <ChevronRight className="w-3.5 h-3.5" />
-        </button>
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+          Match Score
+        </div>
+        {id ? (
+          <Link
+            to="/scheme/$id"
+            params={{ id }}
+            className="text-[12px] font-semibold text-[#1E3A8A] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all"
+          >
+            View details <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        ) : (
+          <span className="text-[12px] font-semibold text-[#94A3B8] inline-flex items-center gap-1 cursor-not-allowed">
+            Details unavailable
+          </span>
+        )}
       </div>
     </div>
   );
 }
-

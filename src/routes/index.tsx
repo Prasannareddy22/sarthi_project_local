@@ -1,14 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useRef, useMemo, useEffect, useLayoutEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { SchemesTab, Scheme } from "../components/ui/SchemesTab";
+import { Scheme } from "../components/ui/SchemesTab";
 import ApplicationsTab from "../components/ui/ApplicationsTab";
 import NotificationsTab from "../components/ui/NotificationsTab";
 import HelpTab from "../components/ui/HelpTab";
 import SchemeList from "../components/ui/SchemeList";
 import EligibleCard from "../components/EligibleCard";
 import { resolveSchemeIdentity } from "@/lib/schemeMatch";
-type TabId = "engine" | "schemes" | "applications" | "notifications" | "help";
+import {
+  type TabId,
+  type EngineFormData,
+  type IndexSearch,
+  defaultFormData,
+  parseIndexSearch,
+  buildSchemeLinkSearch,
+} from "@/lib/engineState";
 
 import {
   Search,
@@ -43,23 +50,16 @@ import {
   Globe,
 } from "lucide-react";
 
-// 1. Define the type for your search params
-type IndexSearch = {
-  tab?: "engine" | "schemes" | "applications" | "notifications" | "help";
-};
-
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): IndexSearch => {
-    return {
-      tab: (search.tab as IndexSearch["tab"]) || "engine",
-    };
-  },
+  validateSearch: (search: Record<string, unknown>): IndexSearch => parseIndexSearch(search),
   component: SarthiPortal,
 });
 
 function SarthiPortal() {
-  const { tab } = Route.useSearch();
-  const [activeTab, setActiveTab] = useState(tab || "engine");
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const { tab } = search;
+  const [activeTab, setActiveTab] = useState<TabId>(tab || "engine");
 
   useEffect(() => {
     if (tab) {
@@ -68,57 +68,25 @@ function SarthiPortal() {
   }, [tab]);
 
   const [loading, setLoading] = useState(false);
-  const [matchedSchemes, setMatchedSchemes] = useState<Scheme[] | null>(null);
+  // Hydrate from ?results=... on mount so a scheme-detail visit followed by
+  // Back doesn't wipe the eligibility report.
+  const [matchedSchemes, setMatchedSchemes] = useState<Scheme[] | null>(search.results ?? null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeSection, setActiveSection] = useState("personal");
-  const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    age_months: "",
-    gender: "",
-    caste: "",
-    religion: "",
-    annual_income: "",
-    is_rural: true,
-    is_income_tax_payer: false,
-    is_government_employee: false,
-    is_head_of_family: false,
-    has_lpg_connection: false,
-    is_permanent_resident: true,
-    has_white_ration_card: false,
-    is_married: false,
-    is_unmarried: false,
-    is_about_to_marry: false,
-    is_pregnant: false,
-    is_lactating: false,
-    owns_pucca_house: false,
-    is_widow: false,
-    is_single_woman: false,
-    is_disabled: false,
-    occupation: "",
-    has_specific_medical_condition: false,
-    is_pattadar: false,
-    has_cultivable_land: "",
-    is_active_farmer: false,
-    class_level: "",
-    attendance_percent: "",
-    graduation_marks_percent: "",
-    graduation_percentage: "",
-    is_graduate: false,
-    is_final_year_student: false,
-    has_confirmed_admission: false,
-    target_country: "",
-    education_level: "",
-    gre_score: "",
-    gmat_score: "",
-    ielts_score: "",
-    toefl_score: "",
-    normalized_gre_gmat: "",
-    normalized_english_test: "",
-    electricity_consumption: "",
-    has_electricity_bill_dues: false,
-  });
+  // Hydrate from ?input=... the same way, falling back to defaults for any
+  // field missing from the URL (e.g. an older/partial link).
+  const [formData, setFormData] = useState<EngineFormData>(() => ({
+    ...defaultFormData,
+    ...search.input,
+  }));
+
+  // Keeps the URL's tab in sync so switching tabs is itself bookmarkable/
+  // back-button-able, without spamming browser history on every click.
+  const goToTab = (nextTab: TabId) => {
+    setActiveTab(nextTab);
+    navigate({ search: (prev) => ({ ...prev, tab: nextTab }), replace: true });
+  };
 
   const requiredFields = [
     { key: "name", label: "Full Name" },
@@ -259,7 +227,15 @@ function SarthiPortal() {
       });
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
-      setMatchedSchemes(data.details || []);
+      const results = data.details || [];
+      setMatchedSchemes(results);
+      // Snapshot this run's inputs + results into the URL (replacing, not
+      // pushing, since this is a refinement of the same engine session) so
+      // a visit to a scheme detail page and back restores this exact report.
+      navigate({
+        search: (prev) => ({ ...prev, tab: "engine", input: formData, results }),
+        replace: true,
+      });
       setTimeout(() => {
         document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
@@ -337,7 +313,7 @@ function SarthiPortal() {
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id as TabId)} // Safe casting now
+                onClick={() => goToTab(item.id as TabId)} // Safe casting now
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                   activeTab === item.id
                     ? "bg-[#F1F5F9] text-[#0B2240] font-bold"
@@ -392,7 +368,7 @@ function SarthiPortal() {
               <button // Change <a> to <button>
                 key={item.label}
                 onClick={() => {
-                  setActiveTab(item.id as TabId); // Safe casting
+                  goToTab(item.id as TabId); // Safe casting
                   setMobileMenuOpen(false); // Close menu after clicking
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-[14px] font-medium text-[#334155] hover:bg-[#F8FAFC]"
@@ -1180,7 +1156,12 @@ function SarthiPortal() {
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
                 {matchedSchemes.map((scheme, idx) => (
-                  <SchemeMatchCard key={idx} scheme={scheme} />
+                  <SchemeMatchCard
+                    key={idx}
+                    scheme={scheme}
+                    input={formData}
+                    results={matchedSchemes}
+                  />
                 ))}
               </div>
             )}
@@ -1205,7 +1186,13 @@ function SarthiPortal() {
                   {matchedSchemes
                     .filter((s) => s.percentage === 100)
                     .map((scheme, idx) => (
-                      <EligibleCard key={idx} scheme={scheme} />
+                      <EligibleCard
+                        key={idx}
+                        scheme={scheme}
+                        from="engine"
+                        input={formData}
+                        results={matchedSchemes}
+                      />
                     ))}
                 </div>
               </div>
@@ -1578,7 +1565,15 @@ function SummaryCard({
   );
 }
 
-function SchemeMatchCard({ scheme }: { scheme: Scheme }) {
+function SchemeMatchCard({
+  scheme,
+  input,
+  results,
+}: {
+  scheme: Scheme;
+  input?: Partial<EngineFormData>;
+  results?: Scheme[];
+}) {
   const { id } = resolveSchemeIdentity(scheme);
   const pct = scheme.percentage ?? 0;
   const fully = pct === 100;
@@ -1647,6 +1642,7 @@ function SchemeMatchCard({ scheme }: { scheme: Scheme }) {
           <Link
             to="/scheme/$id"
             params={{ id }}
+            search={buildSchemeLinkSearch("engine", { input, results })}
             className="text-[12px] font-semibold text-[#1E3A8A] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all"
           >
             View details <ChevronRight className="w-3.5 h-3.5" />

@@ -1,16 +1,34 @@
 // EligibleCard.tsx
 import { Link } from "@tanstack/react-router";
 import { Award, CheckCircle2, ArrowRight } from "lucide-react";
-import { resolveSchemeIdentity, type MatchedSchemeRaw } from "../lib/schemeMatch";
+import { resolveSchemeIdentity, type MatchedSchemeRaw } from "@/lib/schemeMatch";
+import { buildSchemeLinkSearch, type TabId, type EngineFormData } from "@/lib/engineState";
+import type { Scheme } from "@/components/ui/SchemesTab";
 
 export interface EligibleCardProps {
   // Accepts either a canonical catalog scheme ({id, name, ...}) or a raw
   // eligibility-engine match ({ scheme, benefits, missing, percentage }).
   scheme: MatchedSchemeRaw;
+  // Where this card is rendered from, so the scheme detail page's Back
+  // button knows which tab (and, for the engine, which inputs/results) to
+  // return to. Defaults to the catalog since that's EligibleCard's other
+  // caller; the Eligibility Engine passes from="engine" explicitly.
+  from?: TabId;
+  input?: Partial<EngineFormData>;
+  results?: Scheme[];
 }
 
-export default function EligibleCard({ scheme }: EligibleCardProps) {
+export default function EligibleCard({
+  scheme,
+  from = "schemes",
+  input,
+  results,
+}: EligibleCardProps) {
   const { id, name } = resolveSchemeIdentity(scheme);
+
+  if (!id) {
+    console.log("DEBUG: ID resolution failed. Inspecting scheme object:", scheme);
+  }
 
   return (
     <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-white to-[#F8FAFC] border border-[#E2E8F0] p-5 hover:shadow-xl hover:-translate-y-1 transition-all group">
@@ -36,6 +54,7 @@ export default function EligibleCard({ scheme }: EligibleCardProps) {
         <Link
           to="/scheme/$id"
           params={{ id }}
+          search={buildSchemeLinkSearch(from, { input, results })}
           className="relative mt-5 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0B2240] text-white text-[13px] font-semibold hover:bg-[#1E3A8A] transition-colors"
         >
           Apply now{" "}

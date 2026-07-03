@@ -1,19 +1,28 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { getSchemeById } from '../../services/schemeService'; 
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { getSchemeById } from "../../services/schemeService";
+import { parseSchemeDetailSearch, type SchemeDetailSearch } from "@/lib/engineState";
 
-export const Route = createFileRoute('/scheme/$id')({
+export const Route = createFileRoute("/scheme/$id")({
+  validateSearch: (search: Record<string, unknown>): SchemeDetailSearch =>
+    parseSchemeDetailSearch(search),
   component: SchemeDetail,
 });
 
 function SchemeDetail() {
   const { id } = Route.useParams();
+  const { from, input, results } = Route.useSearch();
   const scheme = getSchemeById(id);
+  const backTab = from ?? "schemes";
+  const backLabel = backTab === "engine" ? "Back to Eligibility Engine" : "Back to all schemes";
+  const backSearch = backTab === "engine" ? { tab: backTab, input, results } : { tab: backTab };
 
   if (!scheme) {
     return (
       <div className="p-10 text-center text-slate-600">
         <h2 className="text-2xl font-bold mb-2">Scheme not found!</h2>
-        <Link to="/" className="text-blue-600 hover:underline">Return to Dashboard</Link>
+        <Link to="/" search={backSearch} className="text-blue-600 hover:underline">
+          Return to Dashboard
+        </Link>
       </div>
     );
   }
@@ -21,21 +30,20 @@ function SchemeDetail() {
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-12 bg-white shadow-sm border border-slate-200 rounded-2xl mt-8">
       {/* Back Navigation */}
-      <Link 
-        to="/" 
-        search={{ tab: 'schemes' }} 
+      <Link
+        to="/"
+        search={backSearch}
         className="group flex items-center text-sm font-medium text-slate-400 hover:text-blue-600 transition-colors mb-8"
       >
-        <span className="mr-2 transition-transform group-hover:-translate-x-1">←</span> Back to all schemes
+        <span className="mr-2 transition-transform group-hover:-translate-x-1">←</span> {backLabel}
       </Link>
-        
 
       {/* Main Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4">{scheme.name}</h1>
         <p className="text-lg text-slate-600 leading-relaxed">{scheme.description}</p>
       </div>
-      
+
       {/* Two-Column Grid for Details */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
@@ -48,12 +56,14 @@ function SchemeDetail() {
             ))}
           </ul>
         </div>
-        
+
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
           <h3 className="text-lg font-bold text-slate-900 mb-3">Required Documents</h3>
           <ul className="space-y-2 list-disc ml-4">
             {scheme.documents.map((doc: string, i: number) => (
-              <li key={i} className="text-slate-700 text-sm">{doc}</li>
+              <li key={i} className="text-slate-700 text-sm">
+                {doc}
+              </li>
             ))}
           </ul>
         </div>
@@ -63,11 +73,13 @@ function SchemeDetail() {
       <div className="p-6 bg-slate-900 rounded-xl text-white flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h3 className="font-bold text-lg">Ready to apply?</h3>
-          <p className="text-slate-300 text-sm">Visit the official portal to complete your application.</p>
+          <p className="text-slate-300 text-sm">
+            Visit the official portal to complete your application.
+          </p>
         </div>
-        <a 
-          href={scheme.onlineLink} 
-          target="_blank" 
+        <a
+          href={scheme.onlineLink}
+          target="_blank"
           rel="noopener noreferrer"
           className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors whitespace-nowrap"
         >

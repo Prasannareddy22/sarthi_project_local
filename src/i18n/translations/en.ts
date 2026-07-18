@@ -358,6 +358,32 @@ export const en = {
     label: "Language",
     select: "Select language",
   },
+  voice: {
+    fillByVoice: "Fill by voice",
+    dictate: "Dictate this field",
+    listening: "Listening…",
+    processing: "Understanding…",
+    stopListening: "Stop listening",
+    tapToSpeak: "Tap to speak",
+    speakNaturally:
+      'Speak naturally — e.g. "My name is Ramesh, I am 62, my income is 1,20,000, I am SC"',
+    filledFields: "Filled {count} field(s) from your voice — please review before submitting.",
+    noFieldsDetected: "Couldn't detect any details. Please try speaking again.",
+    listen: "Listen",
+    readAloud: "Read aloud",
+    play: "Play",
+    pause: "Pause",
+    resume: "Resume",
+    stop: "Stop",
+    errorNotSupported: "Voice input isn't supported in this browser. Try Chrome or Edge.",
+    errorNotAllowed: "Microphone access was denied. Please allow it in your browser settings.",
+    errorNoSpeech: "Didn't catch that — please try again.",
+    errorNetwork: "Network unavailable. Check your connection and try again.",
+    errorAudioCapture: "No microphone found. Please connect one and try again.",
+    errorLanguageNotSupported: "Voice isn't supported for this language on your device.",
+    errorGeneric: "Something went wrong with voice input. Please try again.",
+    languageMismatch: "That didn't sound like the selected language. Switch language or try again.",
+  },
 } as const;
 
 export type Translation = typeof en;

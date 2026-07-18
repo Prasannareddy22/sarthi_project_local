@@ -1199,7 +1199,6 @@ function SarthiPortal() {
         {/* SCHEMES TAB */}
         {activeTab === "schemes" && (
           <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-            <h2 className="text-xl font-bold mb-6">{t("schemesTabPage.heading")}</h2>
             <SchemeList />
           </div>
         )}

@@ -88,6 +88,13 @@ function SarthiPortal() {
     ...defaultFormData,
     ...search.input,
   }));
+  // Always-current mirror of formData so voice handlers invoked from the
+  // recognition callback (a stale closure in continuous mode) merge onto the
+  // latest form state rather than the snapshot taken when the mic started.
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
 
   // --- Voice input state -------------------------------------------------
   // `voiceBusy` is set while the backend parses a natural-language transcript;
@@ -123,14 +130,20 @@ function SarthiPortal() {
     setVoiceNotice("");
     setVoiceBusy(true);
     try {
-      const { fields } = await extractProfile(transcript, language);
-      const { next, filledKeys } = applyExtraction(formData, fields);
+      const { fields, warnings } = await extractProfile(transcript, language);
+      // Merge onto the latest form state (see formDataRef) so speaking several
+      // phrases in one continuous session accumulates instead of overwriting.
+      const { next, filledKeys } = applyExtraction(formDataRef.current, fields);
+      const mismatch = warnings.includes("language_mismatch");
       if (filledKeys.length === 0) {
-        setVoiceNotice(t("voice.noFieldsDetected"));
+        setVoiceError(mismatch ? t("voice.languageMismatch") : "");
+        setVoiceNotice(mismatch ? "" : t("voice.noFieldsDetected"));
         return;
       }
       setFormData(next);
       setVoiceNotice(t("voice.filledFields", { count: filledKeys.length }));
+      // Surface the mismatch alongside the success notice when relevant.
+      if (mismatch) setVoiceError(t("voice.languageMismatch"));
     } catch {
       setVoiceError(t("voice.errorNetwork"));
     } finally {

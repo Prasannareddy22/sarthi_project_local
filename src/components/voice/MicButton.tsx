@@ -75,9 +75,11 @@ export default function MicButton({
     if (error) onError?.(t(ERROR_KEY[error]));
   }, [error, onError, t]);
 
-  // Preview interim text to the caller as it is recognised.
+  // Preview interim text to the caller as it is recognised. Propagate the
+  // cleared value too, so stale preview text disappears when listening ends
+  // without a final result.
   useEffect(() => {
-    if (interim) onInterim?.(interim);
+    onInterim?.(interim);
   }, [interim, onInterim]);
 
   const disabled = !supported || busy;

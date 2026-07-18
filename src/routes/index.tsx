@@ -23,6 +23,7 @@ import MicButton from "@/components/voice/MicButton";
 import SpeechControls from "@/components/voice/SpeechControls";
 import { extractProfile } from "@/voice/extractProfile";
 import { applyExtraction } from "@/voice/applyExtraction";
+import { spokenNumber } from "@/voice/spokenNumber";
 
 import {
   Search,
@@ -108,17 +109,6 @@ function SarthiPortal() {
   const handleVoiceError = (message: string) => {
     setVoiceNotice("");
     setVoiceError(message);
-  };
-
-  // Single-field dictation helper: normalises spoken numbers (incl. Telugu/
-  // Devanagari digits) down to a plain numeric string for numeric inputs.
-  const spokenNumber = (text: string): string => {
-    const ascii = text.replace(/[\u0C66-\u0C6F\u0966-\u096F]/g, (c) => {
-      const code = c.charCodeAt(0);
-      const base = code >= 0x0c66 ? 0x0c66 : 0x0966;
-      return String(code - base);
-    });
-    return ascii.replace(/[^\d.]/g, "");
   };
 
   // Natural-language dictation: send the transcript to the backend, then

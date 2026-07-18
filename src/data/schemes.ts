@@ -16,39 +16,39 @@ export const schemes: Scheme[] = [
     name: "Maha Lakshmi Scheme",
     category: "Women & Child Welfare",
     requiresMeeSeva: true,
-    description: "A flagship initiative providing monthly financial assistance, subsidized LPG, and free transport to eligible women in Telangana[cite: 1, 2].",
+    description: "A flagship initiative providing monthly financial assistance, subsidized LPG, and free transport to eligible women in Telangana.",
     benefits: [
-      "₹2,500 monthly financial assistance for heads of families[cite: 1, 2]",
-      "One LPG cylinder per month at a subsidized rate of ₹500[cite: 1, 2]",
-      "Unlimited free travel in TSRTC buses across the state for women, girls, and transgenders[cite: 1, 2]"
+      "₹2,500 monthly financial assistance for heads of families",
+      "One LPG cylinder per month at a subsidized rate of ₹500",
+      "Unlimited free travel in TSRTC buses across the state for women, girls, and transgenders"
     ],
     documents: [
-      "[Aadhaar Redacted] (or valid photo ID with address proof)[cite: 1, 2]",
-      "Bank account details (linked with [Aadhaar Redacted] for DBT)[cite: 1, 2]",
-      "Ration Card (for LPG subsidy)[cite: 1, 2]"
+      "[Aadhaar Redacted] (or valid photo ID with address proof)",
+      "Bank account details (linked with [Aadhaar Redacted] for DBT)",
+      "Ration Card (for LPG subsidy)"
     ],
     onlineLink: "https://mahalakshmi.telangana.gov.in/",
-    offlineInstructions: "For registration or Smart Card issues, visit your nearest Mee Seva center with your required documents[cite: 1, 2]."
+    offlineInstructions: "For registration or Smart Card issues, visit your nearest Mee Seva center with your required documents."
   }, 
   {
     id: "kalyana-lakshmi",
     name: "Kalyana Lakshmi Scheme",
     category: "Women & Child Welfare",
     requiresMeeSeva: true,
-    description: "One-time financial assistance provided to eligible girls at the time of marriage to support families[cite: 1, 2].",
+    description: "One-time financial assistance provided to eligible girls at the time of marriage to support families.",
     benefits: [
-      "₹1,00,116 standard financial assistance[cite: 1, 2]",
-      "₹1,25,145 for disabled girls[cite: 1, 2]"
+      "₹1,00,116 standard financial assistance",
+      "₹1,25,145 for disabled girls"
     ],
     documents: [
-      "[Aadhaar Redacted][cite: 1, 2]",
-      "Marriage Certificate[cite: 1, 2]",
-      "Caste Certificate[cite: 1, 2]",
-      "Income Certificate[cite: 1, 2]",
-      "Bank Passbook[cite: 1, 2]"
+      "[Aadhaar Redacted]",
+      "Marriage Certificate",
+      "Caste Certificate",
+      "Income Certificate",
+      "Bank Passbook"
     ],
     onlineLink: "https://telanganaepass.cgg.gov.in/",
-    offlineInstructions: "Apply via Mee Seva or the local Tahsildar office[cite: 1, 2]."
+    offlineInstructions: "Apply via Mee Seva or the local Tahsildar office."
     },
     {
     id: "shaadi-mubarak",
@@ -57,18 +57,18 @@ export const schemes: Scheme[] = [
     requiresMeeSeva: true,
     description: "Financial assistance provided to girls from minority communities at the time of marriage to support families.",
     benefits: [
-        "₹1,00,116 standard financial assistance[cite: 1, 2]",
-        "₹1,25,145 for disabled girls[cite: 1, 2]"
+        "₹1,00,116 standard financial assistance",
+        "₹1,25,145 for disabled girls"
     ],
     documents: [
-        "[Aadhaar Redacted][cite: 1, 2]",
-        "Marriage Certificate[cite: 1, 2]",
-        "Caste Certificate[cite: 1, 2]",
-        "Income Certificate[cite: 1, 2]",
-        "Bank Passbook[cite: 1, 2]"
+        "[Aadhaar Redacted]",
+        "Marriage Certificate",
+        "Caste Certificate",
+        "Income Certificate",
+        "Bank Passbook"
     ],
     onlineLink: "https://telanganaepass.cgg.gov.in/",
-    offlineInstructions: "Apply via Mee Seva or the local Tahsildar office[cite: 1, 2]."
+    offlineInstructions: "Apply via Mee Seva or the local Tahsildar office."
     },
     {
     id: "gruha-jyothi",
@@ -78,14 +78,14 @@ export const schemes: Scheme[] = [
     description: "Provides free electricity up to 200 units per month for eligible domestic households in Telangana.",
     benefits: [
         "Zero electricity bill for consumption up to 200 units per month",
-        "Subsidy provided on a continuous monthly basis[cite: 1, 2]"
+        "Subsidy provided on a continuous monthly basis"
     ],
     documents: [
-        "Valid domestic electricity connection[cite: 1, 2]",
-        "[Aadhaar Redacted] (linked with ration card and electricity connection)[cite: 1, 2]",
-        "White Ration Card (Food Security Card)[cite: 1, 2]"
+        "Valid domestic electricity connection",
+        "[Aadhaar Redacted] (linked with ration card and electricity connection)",
+        "White Ration Card (Food Security Card)"
     ],
-    offlineInstructions: "The scheme is linked to electricity service connections; ensure [Aadhaar Redacted] and ration card details are updated with your electricity provider[cite: 1, 2]."
+    offlineInstructions: "The scheme is linked to electricity service connections; ensure [Aadhaar Redacted] and ration card details are updated with your electricity provider."
     },
     {
     id: "indiramma-housing",
@@ -95,14 +95,14 @@ export const schemes: Scheme[] = [
     description: "Financial assistance provided for house construction to eligible homeless and landless families.",
     benefits: [
         "Financial assistance of up to ₹5 Lakh for house construction",
-        "Free plot or land provided to landless and homeless families[cite: 1, 2]",
-        "Support for incomplete houses (₹3 Lakh for foundation stage, ₹2 Lakh for slab stage)[cite: 1, 2]"
+        "Free plot or land provided to landless and homeless families",
+        "Support for incomplete houses (₹3 Lakh for foundation stage, ₹2 Lakh for slab stage)"
     ],
     documents: [
-        "White Ration Card (Food Security Card)[cite: 1, 2]",
-        "[Aadhaar Redacted][cite: 1, 2]"
+        "White Ration Card (Food Security Card)",
+        "[Aadhaar Redacted]"
     ],
-    offlineInstructions: "Beneficiaries are selected based on government-verified L1/L2 lists; inquire at your local MRO or housing office for status[cite: 1, 2]."
+    offlineInstructions: "Beneficiaries are selected based on government-verified L1/L2 lists; inquire at your local MRO or housing office for status."
     },
     {
     id: "cheyutha",
@@ -112,15 +112,15 @@ export const schemes: Scheme[] = [
     description: "Provides monthly pensions to senior citizens, widows, and other vulnerable groups, integrated with health coverage.",
     benefits: [
         "₹4,000 monthly pension for most eligible categories",
-        "₹6,000 monthly pension for Persons with Disabilities (Divyang)[cite: 1]",
-        "Aarogya Sri integration providing up to ₹10 Lakh free medical treatment per family per year[cite: 1]"
+        "₹6,000 monthly pension for Persons with Disabilities (Divyang)",
+        "Aarogya Sri integration providing up to ₹10 Lakh free medical treatment per family per year"
     ],
     documents: [
-        "[Aadhaar Redacted] (linked with bank account)[cite: 1]",
-        "Income Certificate[cite: 1]",
-        "Caste/Disability Certificate[cite: 1]"
+        "[Aadhaar Redacted] (linked with bank account)",
+        "Income Certificate",
+        "Caste/Disability Certificate"
     ],
-    offlineInstructions: "Submit your application at the local MRO office or your nearest Mee Seva center for processing[cite: 1]."
+    offlineInstructions: "Submit your application at the local MRO office or your nearest Mee Seva center for processing."
     },
     {
     id: "aarogya-lakshmi",
@@ -130,14 +130,14 @@ export const schemes: Scheme[] = [
     description: "Provides nutritious meals and health monitoring for pregnant women, lactating mothers, and children at Anganwadi Centres.",
     benefits: [
         "One full nutritious meal daily for 25 days a month for pregnant and lactating women",
-        "Daily supply of milk and eggs[cite: 1]",
-        "Regular supply of Iron & Folic Acid (IFA) tablets[cite: 1]",
-        "Nutritional support for children aged 7 months to 6 years[cite: 1]"
+        "Daily supply of milk and eggs",
+        "Regular supply of Iron & Folic Acid (IFA) tablets",
+        "Nutritional support for children aged 7 months to 6 years"
     ],
     documents: [
-        "Registration at local Anganwadi Centre[cite: 1]"
+        "Registration at local Anganwadi Centre"
     ],
-    offlineInstructions: "Visit your nearest Anganwadi Centre to register; no formal application portal is required for initial enrollment[cite: 1]."
+    offlineInstructions: "Visit your nearest Anganwadi Centre to register; no formal application portal is required for initial enrollment."
     },
     {
     id: "indiramma-life-insurance",

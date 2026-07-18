@@ -3,6 +3,7 @@ import { getSchemeById } from "../../services/schemeService";
 import { parseSchemeDetailSearch, type SchemeDetailSearch } from "@/lib/engineState";
 import { useTranslation } from "@/i18n/useTranslation";
 import { localizeScheme } from "@/i18n/schemes";
+import SpeechControls from "@/components/voice/SpeechControls";
 
 export const Route = createFileRoute("/scheme/$id")({
   validateSearch: (search: Record<string, unknown>): SchemeDetailSearch =>
@@ -20,6 +21,19 @@ function SchemeDetail() {
   const backLabel =
     backTab === "engine" ? t("schemeDetail.backToEngine") : t("schemeDetail.backToSchemes");
   const backSearch = backTab === "engine" ? { tab: backTab, input, results } : { tab: backTab };
+
+  // Full spoken version of the scheme detail for the "Listen" (TTS) control.
+  const speechText = scheme
+    ? [
+        scheme.name,
+        scheme.description,
+        `${t("schemeDetail.keyBenefits")}: ${scheme.benefits.join(". ")}`,
+        `${t("schemeDetail.requiredDocuments")}: ${scheme.documents.join(", ")}`,
+        scheme.offlineInstructions,
+      ]
+        .filter(Boolean)
+        .join(". ")
+    : "";
 
   if (!scheme) {
     return (
@@ -45,7 +59,10 @@ function SchemeDetail() {
 
       {/* Main Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-4">{scheme.name}</h1>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <h1 className="text-4xl font-extrabold text-slate-900">{scheme.name}</h1>
+          <SpeechControls text={speechText} language={language} className="mt-1 shrink-0" />
+        </div>
         <p className="text-lg text-slate-600 leading-relaxed">{scheme.description}</p>
       </div>
 

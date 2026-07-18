@@ -19,6 +19,10 @@ import {
 import { useTranslation } from "@/i18n/useTranslation";
 import { localizeSchemeNameById } from "@/i18n/schemes";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import MicButton from "@/components/voice/MicButton";
+import SpeechControls from "@/components/voice/SpeechControls";
+import { extractProfile } from "@/voice/extractProfile";
+import { applyExtraction } from "@/voice/applyExtraction";
 
 import {
   Search,
@@ -50,6 +54,7 @@ import {
   Mail,
   Building2,
   BadgeCheck,
+  Mic,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -58,7 +63,7 @@ export const Route = createFileRoute("/")({
 });
 
 function SarthiPortal() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const { tab } = search;
@@ -83,6 +88,68 @@ function SarthiPortal() {
     ...defaultFormData,
     ...search.input,
   }));
+  // Always-current mirror of formData so voice handlers invoked from the
+  // recognition callback (a stale closure in continuous mode) merge onto the
+  // latest form state rather than the snapshot taken when the mic started.
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  // --- Voice input state -------------------------------------------------
+  // `voiceBusy` is set while the backend parses a natural-language transcript;
+  // `voiceNotice`/`voiceError` feed a shared aria-live region so results and
+  // problems are announced to screen readers without shifting the layout.
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [voiceNotice, setVoiceNotice] = useState("");
+  const [voiceError, setVoiceError] = useState("");
+  const [voiceInterim, setVoiceInterim] = useState("");
+
+  const handleVoiceError = (message: string) => {
+    setVoiceNotice("");
+    setVoiceError(message);
+  };
+
+  // Single-field dictation helper: normalises spoken numbers (incl. Telugu/
+  // Devanagari digits) down to a plain numeric string for numeric inputs.
+  const spokenNumber = (text: string): string => {
+    const ascii = text.replace(/[\u0C66-\u0C6F\u0966-\u096F]/g, (c) => {
+      const code = c.charCodeAt(0);
+      const base = code >= 0x0c66 ? 0x0c66 : 0x0966;
+      return String(code - base);
+    });
+    return ascii.replace(/[^\d.]/g, "");
+  };
+
+  // Natural-language dictation: send the transcript to the backend, then
+  // merge the extracted fields into the form (nothing is auto-submitted).
+  const handleNaturalLanguage = async (transcript: string) => {
+    setVoiceInterim("");
+    if (!transcript.trim()) return;
+    setVoiceError("");
+    setVoiceNotice("");
+    setVoiceBusy(true);
+    try {
+      const { fields, warnings } = await extractProfile(transcript, language);
+      // Merge onto the latest form state (see formDataRef) so speaking several
+      // phrases in one continuous session accumulates instead of overwriting.
+      const { next, filledKeys } = applyExtraction(formDataRef.current, fields);
+      const mismatch = warnings.includes("language_mismatch");
+      if (filledKeys.length === 0) {
+        setVoiceError(mismatch ? t("voice.languageMismatch") : "");
+        setVoiceNotice(mismatch ? "" : t("voice.noFieldsDetected"));
+        return;
+      }
+      setFormData(next);
+      setVoiceNotice(t("voice.filledFields", { count: filledKeys.length }));
+      // Surface the mismatch alongside the success notice when relevant.
+      if (mismatch) setVoiceError(t("voice.languageMismatch"));
+    } catch {
+      setVoiceError(t("voice.errorNetwork"));
+    } finally {
+      setVoiceBusy(false);
+    }
+  };
 
   // Keeps the URL's tab in sync so switching tabs is itself bookmarkable/
   // back-button-able, without spamming browser history on every click.
@@ -249,6 +316,25 @@ function SarthiPortal() {
   };
 
   const eligibleCount = matchedSchemes?.filter((s) => s.percentage === 100).length ?? 0;
+
+  // Spoken summary of the eligibility report (title, counts, and the localized
+  // names of the fully-eligible schemes) for the results text-to-speech button.
+  const resultsSpeech = useMemo(() => {
+    if (!matchedSchemes) return "";
+    const header = `${t("results.reportTitle")}. ${t("results.reportSubtitle", {
+      total: matchedSchemes.length,
+      eligible: eligibleCount,
+    })}.`;
+    const eligibleNames = matchedSchemes
+      .filter((s) => s.percentage === 100)
+      .map((s) => {
+        const { id } = resolveSchemeIdentity(s);
+        return localizeSchemeNameById(language, id, s.name || s.scheme || "");
+      })
+      .filter(Boolean);
+    if (eligibleNames.length === 0) return header;
+    return `${header} ${t("results.fullyEligibleTitle")}: ${eligibleNames.join(", ")}.`;
+  }, [matchedSchemes, eligibleCount, language, t]);
   const sections = [
     { id: "personal", label: t("sections.navPersonal"), icon: User, progress: completion.personal },
     { id: "socio", label: t("sections.navSocio"), icon: Wallet, progress: completion.socio },
@@ -600,24 +686,85 @@ function SarthiPortal() {
                 desc={t("sections.personalDesc")}
                 progress={completion.personal}
               >
+                {/* Voice fill (natural language) */}
+                <div className="mb-5 rounded-xl border border-[#1E3A8A]/15 bg-gradient-to-br from-[#1E3A8A]/5 to-white p-3.5">
+                  <div className="flex items-center gap-3">
+                    <MicButton
+                      language={language}
+                      label={t("voice.fillByVoice")}
+                      size="lg"
+                      continuous
+                      busy={voiceBusy}
+                      onTranscript={handleNaturalLanguage}
+                      onInterim={setVoiceInterim}
+                      onError={handleVoiceError}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#0B2240]">
+                        <Mic className="w-3.5 h-3.5 text-[#1E3A8A]" />
+                        {t("voice.fillByVoice")}
+                      </div>
+                      <p className="text-[11px] text-[#64748B] leading-snug mt-0.5">
+                        {t("voice.speakNaturally")}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Shared, non-layout-shifting live region for voice feedback */}
+                  <div aria-live="polite" className="mt-2 empty:mt-0">
+                    {voiceInterim && (
+                      <p className="text-[12px] text-[#64748B] italic">“{voiceInterim}”</p>
+                    )}
+                    {voiceNotice && (
+                      <p className="text-[12px] font-medium text-[#047857]">{voiceNotice}</p>
+                    )}
+                    {voiceError && (
+                      <p className="text-[12px] font-medium text-[#DC2626]" role="alert">
+                        {voiceError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 {/* Name & Age Row */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label={t("form.fullName")} required>
-                    <input
-                      ref={nameRef}
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className={inputCls}
-                    />
+                    <div className="relative">
+                      <input
+                        ref={nameRef}
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className={`${inputCls} pr-10`}
+                      />
+                      <MicButton
+                        language={language}
+                        label={`${t("voice.dictate")}: ${t("form.fullName")}`}
+                        size="sm"
+                        onTranscript={(text) => setFormData({ ...formData, name: text })}
+                        onError={handleVoiceError}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                      />
+                    </div>
                   </Field>
                   <Field label={t("form.ageYears")} required>
-                    <input
-                      ref={ageRef}
-                      type="number"
-                      value={formData.age}
-                      onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                      className={inputCls}
-                    />
+                    <div className="relative">
+                      <input
+                        ref={ageRef}
+                        type="number"
+                        value={formData.age}
+                        onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                        className={`${inputCls} pr-10`}
+                      />
+                      <MicButton
+                        language={language}
+                        label={`${t("voice.dictate")}: ${t("form.ageYears")}`}
+                        size="sm"
+                        onTranscript={(text) =>
+                          setFormData({ ...formData, age: spokenNumber(text) })
+                        }
+                        onError={handleVoiceError}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                      />
+                    </div>
                   </Field>
                 </div>
 
@@ -773,7 +920,17 @@ function SarthiPortal() {
                       value={formData.annual_income}
                       onChange={(e) => setFormData({ ...formData, annual_income: e.target.value })}
                       placeholder={t("form.incomePlaceholder")}
-                      className={`${inputCls} pl-8`}
+                      className={`${inputCls} pl-8 pr-10`}
+                    />
+                    <MicButton
+                      language={language}
+                      label={`${t("voice.dictate")}: ${t("form.annualIncome")}`}
+                      size="sm"
+                      onTranscript={(text) =>
+                        setFormData({ ...formData, annual_income: spokenNumber(text) })
+                      }
+                      onError={handleVoiceError}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2"
                     />
                   </div>
                 </Field>
@@ -1127,6 +1284,11 @@ function SarthiPortal() {
                     eligible: eligibleCount,
                   })}
                 </p>
+                {matchedSchemes.length > 0 && (
+                  <div className="mt-3">
+                    <SpeechControls text={resultsSpeech} language={language} />
+                  </div>
+                )}
               </div>
               {eligibleCount > 0 && (
                 <a

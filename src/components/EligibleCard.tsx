@@ -4,6 +4,7 @@ import { Award, CheckCircle2, ArrowRight } from "lucide-react";
 import { resolveSchemeIdentity, type MatchedSchemeRaw } from "@/lib/schemeMatch";
 import { buildSchemeLinkSearch, type TabId, type EngineFormData } from "@/lib/engineState";
 import type { Scheme } from "@/components/ui/SchemesTab";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export interface EligibleCardProps {
   // Accepts either a canonical catalog scheme ({id, name, ...}) or a raw
@@ -24,6 +25,7 @@ export default function EligibleCard({
   input,
   results,
 }: EligibleCardProps) {
+  const { t } = useTranslation();
   const { id, name } = resolveSchemeIdentity(scheme);
 
   if (!id) {
@@ -38,7 +40,7 @@ export default function EligibleCard({
           <Award className="w-5 h-5" />
         </div>
         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#10B981] bg-[#10B981]/10 px-2 py-1 rounded-full">
-          <CheckCircle2 className="w-3 h-3" /> 100% Match
+          <CheckCircle2 className="w-3 h-3" /> {t("eligibleCard.match")}
         </span>
       </div>
 
@@ -47,7 +49,7 @@ export default function EligibleCard({
       </div>
 
       <div className="relative mt-1 text-[11px] text-[#64748B] uppercase tracking-wider font-semibold">
-        Government of Telangana
+        {t("eligibleCard.govtOfTelangana")}
       </div>
 
       {id ? (
@@ -57,16 +59,16 @@ export default function EligibleCard({
           search={buildSchemeLinkSearch(from, { input, results })}
           className="relative mt-5 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0B2240] text-white text-[13px] font-semibold hover:bg-[#1E3A8A] transition-colors"
         >
-          Apply now{" "}
+          {t("eligibleCard.applyNow")}{" "}
           <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       ) : (
         <button
           disabled
           className="relative mt-5 w-full py-2.5 rounded-xl bg-gray-300 text-gray-500 text-[13px] font-semibold cursor-not-allowed"
-          title="We couldn't match this scheme to a details page"
+          title={t("eligibleCard.detailsUnavailableTitle")}
         >
-          Details unavailable
+          {t("eligibleCard.detailsUnavailable")}
         </button>
       )}
     </div>

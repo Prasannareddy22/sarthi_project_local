@@ -16,6 +16,8 @@ import {
   parseIndexSearch,
   buildSchemeLinkSearch,
 } from "@/lib/engineState";
+import { useTranslation } from "@/i18n/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 import {
   Search,
@@ -47,7 +49,6 @@ import {
   Mail,
   Building2,
   BadgeCheck,
-  Globe,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -56,6 +57,7 @@ export const Route = createFileRoute("/")({
 });
 
 function SarthiPortal() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const { tab } = search;
@@ -89,13 +91,13 @@ function SarthiPortal() {
   };
 
   const requiredFields = [
-    { key: "name", label: "Full Name" },
-    { key: "age", label: "Age" },
-    { key: "gender", label: "Gender" },
-    { key: "religion", label: "Religion" },
-    { key: "caste", label: "Caste" },
-    { key: "annual_income", label: "Annual Income" },
-    { key: "is_rural", label: "Residence Type" },
+    { key: "name", label: t("form.fullName") },
+    { key: "age", label: t("form.age") },
+    { key: "gender", label: t("form.gender") },
+    { key: "religion", label: t("form.religion") },
+    { key: "caste", label: t("form.caste") },
+    { key: "annual_income", label: t("form.annualIncomeShort") },
+    { key: "is_rural", label: t("form.residenceType") },
   ];
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -156,9 +158,7 @@ function SarthiPortal() {
     });
 
     if (missingField) {
-      setErrorMessage(
-        `Please fill out the ${missingField.label} field before checking eligibility.`,
-      );
+      setErrorMessage(t("submit.validationRequired", { field: missingField.label }));
       const ref = fieldRefs[missingField.key];
       if (ref?.current) {
         ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -241,7 +241,7 @@ function SarthiPortal() {
       }, 100);
     } catch (error) {
       console.error("Evaluation failed:", error);
-      alert("Unable to connect to the eligibility engine. Please try again later.");
+      alert(t("submit.apiError"));
     } finally {
       setLoading(false);
     }
@@ -249,15 +249,15 @@ function SarthiPortal() {
 
   const eligibleCount = matchedSchemes?.filter((s) => s.percentage === 100).length ?? 0;
   const sections = [
-    { id: "personal", label: "Personal Information", icon: User, progress: completion.personal },
-    { id: "socio", label: "Socio-Economic", icon: Wallet, progress: completion.socio },
+    { id: "personal", label: t("sections.navPersonal"), icon: User, progress: completion.personal },
+    { id: "socio", label: t("sections.navSocio"), icon: Wallet, progress: completion.socio },
     {
       id: "education",
-      label: "Education & Agriculture",
+      label: t("sections.navEducation"),
       icon: GraduationCap,
       progress: completion.eduAgri,
     },
-    { id: "welfare", label: "Welfare Factors", icon: Shield, progress: completion.welfare },
+    { id: "welfare", label: t("sections.navWelfare"), icon: Shield, progress: completion.welfare },
   ];
 
   return (
@@ -268,22 +268,13 @@ function SarthiPortal() {
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="inline-flex items-center gap-1.5 font-medium tracking-wide">
               <span className="text-base leading-none">🇮🇳</span>
-              <span className="hidden sm:inline">Government of Telangana</span>
-              <span className="sm:hidden">GoT</span>
+              <span className="hidden sm:inline">{t("govtStrip.government")}</span>
+              <span className="sm:hidden">{t("govtStrip.governmentShort")}</span>
             </span>
             <span className="text-white/30">|</span>
-            <span className="hidden md:inline text-white/70">
-              An Official Portal of the Welfare Departments
-            </span>
+            <span className="hidden md:inline text-white/70">{t("govtStrip.officialPortal")}</span>
           </div>
-          <div className="flex items-center gap-1 text-white/80">
-            <Globe className="w-3 h-3" />
-            <button className="px-2 py-0.5 hover:text-white">EN</button>
-            <span className="text-white/30">·</span>
-            <button className="px-2 py-0.5 hover:text-white">తె</button>
-            <span className="text-white/30">·</span>
-            <button className="px-2 py-0.5 hover:text-white">हि</button>
-          </div>
+          <LanguageSwitcher variant="bar" />
         </div>
       </div>
 
@@ -298,18 +289,18 @@ function SarthiPortal() {
             <div className="leading-tight">
               <div className="text-[15px] font-bold tracking-tight text-[#0F172A]">SARTHI</div>
               <div className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-medium">
-                Don't Miss What's Yours
+                {t("nav.tagline")}
               </div>
             </div>
           </div>
 
           <nav className="hidden lg:flex items-center gap-1 text-[13px] font-medium text-[#475569]">
             {[
-              { icon: Sparkles, label: "Eligibility Engine", id: "engine" },
-              { icon: Layers, label: "Schemes", id: "schemes" },
-              { icon: FileText, label: "Applications", id: "applications" },
-              { icon: Bell, label: "Notifications", id: "notifications" },
-              { icon: HelpCircle, label: "Help", id: "help" },
+              { icon: Sparkles, label: t("nav.engine"), id: "engine" },
+              { icon: Layers, label: t("nav.schemes"), id: "schemes" },
+              { icon: FileText, label: t("nav.applications"), id: "applications" },
+              { icon: Bell, label: t("nav.notifications"), id: "notifications" },
+              { icon: HelpCircle, label: t("nav.help"), id: "help" },
             ].map((item) => (
               <button
                 key={item.id}
@@ -330,7 +321,7 @@ function SarthiPortal() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
               <input
-                placeholder="Search schemes…"
+                placeholder={t("nav.searchPlaceholder")}
                 className="w-56 pl-9 pr-3 py-2 text-[13px] rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] focus:outline-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/10 transition"
               />
             </div>
@@ -338,13 +329,13 @@ function SarthiPortal() {
               to="/login"
               className="hidden lg:inline-flex px-3 py-2 text-[13px] font-semibold text-[#0B2240] hover:bg-[#F8FAFC] rounded-lg"
             >
-              Sign in
+              {t("nav.signIn")}
             </Link>
             <Link
               to="/register"
               className="px-3.5 py-2 text-[13px] font-semibold bg-[#0B2240] text-white rounded-lg hover:bg-[#1E3A8A] shadow-sm transition-colors"
             >
-              Register
+              {t("nav.register")}
             </Link>
           </div>
 
@@ -359,11 +350,11 @@ function SarthiPortal() {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-[#E2E8F0] bg-white px-4 py-4 space-y-1">
             {[
-              { icon: Sparkles, label: "Eligibility Engine", id: "engine" },
-              { icon: Layers, label: "Schemes", id: "schemes" },
-              { icon: FileText, label: "Applications", id: "applications" },
-              { icon: Bell, label: "Notifications", id: "notifications" },
-              { icon: HelpCircle, label: "Help", id: "help" },
+              { icon: Sparkles, label: t("nav.engine"), id: "engine" },
+              { icon: Layers, label: t("nav.schemes"), id: "schemes" },
+              { icon: FileText, label: t("nav.applications"), id: "applications" },
+              { icon: Bell, label: t("nav.notifications"), id: "notifications" },
+              { icon: HelpCircle, label: t("nav.help"), id: "help" },
             ].map((item) => (
               <button // Change <a> to <button>
                 key={item.label}
@@ -383,14 +374,14 @@ function SarthiPortal() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex-1 text-center px-3 py-2 text-[13px] font-semibold border border-[#E2E8F0] rounded-lg"
               >
-                Sign in
+                {t("nav.signIn")}
               </Link>
               <Link
                 to="/register"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex-1 text-center px-3 py-2 text-[13px] font-semibold bg-[#0B2240] text-white rounded-lg"
               >
-                Register
+                {t("nav.register")}
               </Link>
             </div>
           </div>
@@ -419,15 +410,14 @@ function SarthiPortal() {
               <div className="lg:col-span-7">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-[11px] font-medium tracking-wide">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                  Live · 30+ welfare schemes indexed
+                  {t("hero.liveBadge")}
                 </div>
                 <h1 className="mt-6 text-[40px] sm:text-[56px] lg:text-[68px] leading-[1.02] font-bold tracking-[-0.025em]">
-                  Don't miss what's <span className="text-[#F59E0B]">rightfully yours.</span>
+                  {t("hero.titleLead")}{" "}
+                  <span className="text-[#F59E0B]">{t("hero.titleHighlight")}</span>
                 </h1>
                 <p className="mt-6 text-[16px] sm:text-[18px] leading-relaxed text-white/70 max-w-2xl">
-                  SARTHI is Telangana's unified eligibility engine. Fill your citizen profile once —
-                  get instantly matched against every state welfare scheme you qualify for, from
-                  pensions and scholarships to housing, healthcare, and agricultural support.
+                  {t("hero.subtitle")}
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -435,25 +425,25 @@ function SarthiPortal() {
                     href="#eligibility-form"
                     className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#0B2240] rounded-xl font-semibold text-[14px] shadow-xl shadow-black/20 hover:shadow-2xl hover:-translate-y-0.5 transition-all"
                   >
-                    Check my eligibility <ArrowRight className="w-4 h-4" />
+                    {t("hero.checkEligibility")} <ArrowRight className="w-4 h-4" />
                   </a>
                   <a
                     href="#"
                     className="inline-flex items-center gap-2 px-5 py-3 border border-white/20 backdrop-blur rounded-xl font-semibold text-[14px] text-white/90 hover:bg-white/10"
                   >
-                    Browse all schemes
+                    {t("hero.browseSchemes")}
                   </a>
                 </div>
 
                 <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px] text-white/60">
                   <div className="flex items-center gap-2">
-                    <BadgeCheck className="w-4 h-4 text-[#10B981]" /> Verified Govt Data
+                    <BadgeCheck className="w-4 h-4 text-[#10B981]" /> {t("hero.verifiedData")}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-[#10B981]" /> 256-bit Encrypted
+                    <Lock className="w-4 h-4 text-[#10B981]" /> {t("hero.encrypted")}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-[#10B981]" /> Aadhaar-grade Privacy
+                    <Shield className="w-4 h-4 text-[#10B981]" /> {t("hero.privacy")}
                   </div>
                 </div>
               </div>
@@ -464,28 +454,28 @@ function SarthiPortal() {
                   {[
                     {
                       icon: Users,
-                      label: "Citizens Served",
+                      label: t("stats.citizensServed"),
                       value: "2.4 Cr",
                       trend: "+12.4%",
                       accent: "from-[#1E3A8A]/40 to-[#1E3A8A]/0",
                     },
                     {
                       icon: IndianRupee,
-                      label: "DBT Disbursed",
+                      label: t("stats.dbtDisbursed"),
                       value: "₹48,200 Cr",
                       trend: "+8.1%",
                       accent: "from-[#10B981]/40 to-[#10B981]/0",
                     },
                     {
                       icon: Layers,
-                      label: "Active Schemes",
+                      label: t("stats.activeSchemes"),
                       value: "30+",
                       trend: "Live",
                       accent: "from-[#F59E0B]/40 to-[#F59E0B]/0",
                     },
                     {
                       icon: TrendingUp,
-                      label: "Match Accuracy",
+                      label: t("stats.matchAccuracy"),
                       value: "98.6%",
                       trend: "AI-graded",
                       accent: "from-white/30 to-white/0",
@@ -532,13 +522,13 @@ function SarthiPortal() {
               <div className="sticky top-24 space-y-4">
                 <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
                   <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
-                    Citizen Profile
+                    {t("sidebar.citizenProfile")}
                   </div>
                   <div className="mt-3 flex items-end justify-between">
                     <div className="text-[34px] font-bold tracking-tight text-[#0B2240]">
                       {completion.overall}%
                     </div>
-                    <div className="text-[11px] text-[#64748B] mb-1.5">complete</div>
+                    <div className="text-[11px] text-[#64748B] mb-1.5">{t("sidebar.complete")}</div>
                   </div>
                   <div className="mt-2 h-1.5 rounded-full bg-[#F1F5F9] overflow-hidden">
                     <div
@@ -588,11 +578,10 @@ function SarthiPortal() {
                   <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#F59E0B]/20 rounded-full blur-2xl" />
                   <Shield className="w-6 h-6 text-[#F59E0B] relative" />
                   <div className="mt-3 text-[13px] font-semibold relative">
-                    Your data is protected
+                    {t("sidebar.dataProtectedTitle")}
                   </div>
                   <div className="text-[11px] text-white/70 mt-1 relative leading-relaxed">
-                    All submissions are encrypted end-to-end and used only for eligibility
-                    computation under GoT data protection guidelines.
+                    {t("sidebar.dataProtectedDesc")}
                   </div>
                 </div>
               </div>
@@ -605,14 +594,14 @@ function SarthiPortal() {
                 id="personal"
                 icon={User}
                 tone="indigo"
-                eyebrow="Section 01"
-                title="Personal Information"
-                desc="Demographic profile used for scheme eligibility matching."
+                eyebrow={`${t("sections.eyebrow")} 01`}
+                title={t("sections.personalTitle")}
+                desc={t("sections.personalDesc")}
                 progress={completion.personal}
               >
                 {/* Name & Age Row */}
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <Field label="Full Name" required>
+                  <Field label={t("form.fullName")} required>
                     <input
                       ref={nameRef}
                       value={formData.name}
@@ -620,7 +609,7 @@ function SarthiPortal() {
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="Age (Years)" required>
+                  <Field label={t("form.ageYears")} required>
                     <input
                       ref={ageRef}
                       type="number"
@@ -632,23 +621,27 @@ function SarthiPortal() {
                 </div>
 
                 {/* Gender */}
-                <Field label="Gender" required>
+                <Field label={t("form.gender")} required>
                   <div
                     ref={genderRef}
                     className="grid grid-cols-3 gap-2 p-1 bg-[#F1F5F9] rounded-xl"
                   >
-                    {["Female", "Male", "Transgender"].map((g) => (
+                    {[
+                      { value: "Female", label: t("form.female") },
+                      { value: "Male", label: t("form.male") },
+                      { value: "Transgender", label: t("form.transgender") },
+                    ].map((g) => (
                       <button
-                        key={g}
+                        key={g.value}
                         type="button"
-                        onClick={() => setFormData({ ...formData, gender: g })}
+                        onClick={() => setFormData({ ...formData, gender: g.value })}
                         className={`py-2.5 text-[12px] font-semibold rounded-lg transition-all ${
-                          formData.gender === g
+                          formData.gender === g.value
                             ? "bg-white text-[#0B2240] shadow-sm ring-1 ring-[#E2E8F0]"
                             : "text-[#64748B] hover:text-[#0B2240]"
                         }`}
                       >
-                        {g}
+                        {g.label}
                       </button>
                     ))}
                   </div>
@@ -656,44 +649,44 @@ function SarthiPortal() {
 
                 {/* Religion & Caste Row */}
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <Field label="Religion" required>
+                  <Field label={t("form.religion")} required>
                     <select
                       ref={religionRef}
                       value={formData.religion}
                       onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
                       className={inputCls}
                     >
-                      <option value="">Select religion</option>
-                      <option>Hindu</option>
-                      <option>Muslim</option>
-                      <option>Christian</option>
-                      <option>Other</option>
+                      <option value="">{t("form.selectReligion")}</option>
+                      <option value="Hindu">{t("form.hindu")}</option>
+                      <option value="Muslim">{t("form.muslim")}</option>
+                      <option value="Christian">{t("form.christian")}</option>
+                      <option value="Other">{t("form.other")}</option>
                     </select>
                   </Field>
-                  <Field label="Caste Category" required>
+                  <Field label={t("form.casteCategory")} required>
                     <select
                       ref={casteRef}
                       value={formData.caste}
                       onChange={(e) => setFormData({ ...formData, caste: e.target.value })}
                       className={inputCls}
                     >
-                      <option value="">Select category</option>
-                      <option>SC</option>
-                      <option>ST</option>
-                      <option>BC</option>
-                      <option>EBC</option>
-                      <option>Minority</option>
-                      <option>General</option>
+                      <option value="">{t("form.selectCategory")}</option>
+                      <option value="SC">SC</option>
+                      <option value="ST">ST</option>
+                      <option value="BC">BC</option>
+                      <option value="EBC">EBC</option>
+                      <option value="Minority">{t("form.minority")}</option>
+                      <option value="General">{t("form.general")}</option>
                     </select>
                   </Field>
                 </div>
 
                 {/* Marital Status Only */}
-                <Field label="Marital Status">
+                <Field label={t("form.maritalStatus")}>
                   <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
                     {[
-                      { label: "Married", value: true },
-                      { label: "Unmarried", value: false },
+                      { label: t("form.married"), value: true },
+                      { label: t("form.unmarried"), value: false },
                     ].map((o) => (
                       <button
                         key={o.label}
@@ -714,22 +707,22 @@ function SarthiPortal() {
                 {/* Boolean Flags in a cleaner Grid */}
                 <div className="grid sm:grid-cols-2 gap-y-3 gap-x-6 pt-2 border-t border-[#F1F5F9] mt-2">
                   <Toggle
-                    label="Head of Family"
+                    label={t("form.headOfFamily")}
                     checked={formData.is_head_of_family}
                     onChange={(v) => setFormData({ ...formData, is_head_of_family: v })}
                   />
                   <Toggle
-                    label="Govt. Employee"
+                    label={t("form.govtEmployee")}
                     checked={formData.is_government_employee}
                     onChange={(v) => setFormData({ ...formData, is_government_employee: v })}
                   />
                   <Toggle
-                    label="Permanent Resident"
+                    label={t("form.permanentResident")}
                     checked={formData.is_permanent_resident}
                     onChange={(v) => setFormData({ ...formData, is_permanent_resident: v })}
                   />
                   <Toggle
-                    label="About to marry"
+                    label={t("form.aboutToMarry")}
                     checked={formData.is_about_to_marry}
                     onChange={(v) => setFormData({ ...formData, is_about_to_marry: v })}
                   />
@@ -741,16 +734,16 @@ function SarthiPortal() {
                 id="socio"
                 icon={Wallet}
                 tone="emerald"
-                eyebrow="Section 02"
-                title="Socio-Economic Information"
-                desc="Income, housing, and household status used to compute welfare and subsidy eligibility."
+                eyebrow={`${t("sections.eyebrow")} 02`}
+                title={t("sections.socioTitle")}
+                desc={t("sections.socioDesc")}
                 progress={completion.socio}
               >
-                <Field label="Residence Type">
+                <Field label={t("form.residenceType")}>
                   <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
                     {[
-                      { label: "Rural", value: true },
-                      { label: "Urban", value: false },
+                      { label: t("form.rural"), value: true },
+                      { label: t("form.urban"), value: false },
                     ].map((o) => (
                       <button
                         key={o.label}
@@ -768,7 +761,7 @@ function SarthiPortal() {
                   </div>
                 </Field>
 
-                <Field label="Annual Family Income (INR)" required>
+                <Field label={t("form.annualIncome")} required>
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B] text-[13px]">
                       ₹
@@ -778,48 +771,48 @@ function SarthiPortal() {
                       type="number"
                       value={formData.annual_income}
                       onChange={(e) => setFormData({ ...formData, annual_income: e.target.value })}
-                      placeholder="e.g. 180000"
+                      placeholder={t("form.incomePlaceholder")}
                       className={`${inputCls} pl-8`}
                     />
                   </div>
                 </Field>
 
                 <Toggle
-                  label="Has LPG Connection"
+                  label={t("form.hasLpg")}
                   checked={formData.has_lpg_connection}
                   onChange={(v) => setFormData({ ...formData, has_lpg_connection: v })}
                 />
 
-                <Field label="Electricity Consumption (units/month)">
+                <Field label={t("form.electricityConsumption")}>
                   <input
                     type="number"
                     value={formData.electricity_consumption}
                     onChange={(e) =>
                       setFormData({ ...formData, electricity_consumption: e.target.value })
                     }
-                    placeholder="e.g. 120"
+                    placeholder={t("form.electricityPlaceholder")}
                     className={inputCls}
                   />
                 </Field>
 
                 <div className="space-y-2">
                   <Toggle
-                    label="Has pending electricity bill dues"
+                    label={t("form.pendingElectricityDues")}
                     checked={formData.has_electricity_bill_dues}
                     onChange={(v) => setFormData({ ...formData, has_electricity_bill_dues: v })}
                   />
                   <Toggle
-                    label="Holds White Ration Card"
+                    label={t("form.whiteRationCard")}
                     checked={formData.has_white_ration_card}
                     onChange={(v) => setFormData({ ...formData, has_white_ration_card: v })}
                   />
                   <Toggle
-                    label="Owns a Pucca House"
+                    label={t("form.ownsPuccaHouse")}
                     checked={formData.owns_pucca_house}
                     onChange={(v) => setFormData({ ...formData, owns_pucca_house: v })}
                   />
                   <Toggle
-                    label="Income Tax Payer"
+                    label={t("form.incomeTaxPayer")}
                     checked={formData.is_income_tax_payer}
                     onChange={(v) => setFormData({ ...formData, is_income_tax_payer: v })}
                     warning
@@ -832,22 +825,22 @@ function SarthiPortal() {
                 id="education"
                 icon={GraduationCap}
                 tone="amber"
-                eyebrow="Section 03"
-                title="Education & Agriculture"
-                desc="Academic and agricultural details for targeted scholarship and farmer schemes."
+                eyebrow={`${t("sections.eyebrow")} 03`}
+                title={t("sections.educationTitle")}
+                desc={t("sections.educationDesc")}
                 progress={completion.eduAgri}
               >
-                <Field label="Current Occupation">
+                <Field label={t("form.currentOccupation")}>
                   <select
                     value={formData.occupation}
                     onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
                     className={inputCls}
                   >
-                    <option value="">Select Occupation</option>
-                    <option value="Student">Student</option>
-                    <option value="Farmer">Farmer</option>
-                    <option value="Employed">Employed</option>
-                    <option value="Unemployed">Unemployed</option>
+                    <option value="">{t("form.selectOccupation")}</option>
+                    <option value="Student">{t("form.student")}</option>
+                    <option value="Farmer">{t("form.farmer")}</option>
+                    <option value="Employed">{t("form.employed")}</option>
+                    <option value="Unemployed">{t("form.unemployed")}</option>
                   </select>
                 </Field>
 
@@ -855,7 +848,7 @@ function SarthiPortal() {
                 {formData.occupation === "Student" && (
                   <div className="mt-4 space-y-4 border-t pt-4">
                     <div className="grid sm:grid-cols-2 gap-4">
-                      <Field label="Class / Level">
+                      <Field label={t("form.classLevel")}>
                         <input
                           type="number"
                           value={formData.class_level}
@@ -865,7 +858,7 @@ function SarthiPortal() {
                           className={inputCls}
                         />
                       </Field>
-                      <Field label="Attendance %">
+                      <Field label={t("form.attendance")}>
                         <input
                           type="number"
                           value={formData.attendance_percent}
@@ -878,11 +871,11 @@ function SarthiPortal() {
                     </div>
 
                     <Toggle
-                      label="Is Graduate"
+                      label={t("form.isGraduate")}
                       checked={formData.is_graduate}
                       onChange={(v) => setFormData({ ...formData, is_graduate: v })}
                     />
-                    <Field label="Graduation Percentage">
+                    <Field label={t("form.graduationPercentage")}>
                       <input
                         type="number"
                         value={formData.graduation_percentage}
@@ -893,20 +886,20 @@ function SarthiPortal() {
                       />
                     </Field>
                     <Toggle
-                      label="Final Year Student"
+                      label={t("form.finalYearStudent")}
                       checked={formData.is_final_year_student}
                       onChange={(v) => setFormData({ ...formData, is_final_year_student: v })}
                     />
 
                     <div className="bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0] space-y-4">
                       <Toggle
-                        label="Has confirmed overseas admission"
+                        label={t("form.confirmedAdmission")}
                         checked={formData.has_confirmed_admission}
                         onChange={(v) => setFormData({ ...formData, has_confirmed_admission: v })}
                       />
                       {formData.has_confirmed_admission && (
                         <>
-                          <Field label="Target Country">
+                          <Field label={t("form.targetCountry")}>
                             <input
                               value={formData.target_country}
                               onChange={(e) =>
@@ -916,7 +909,7 @@ function SarthiPortal() {
                             />
                           </Field>
                           <div className="grid grid-cols-2 gap-4">
-                            <Field label="GRE Score">
+                            <Field label={t("form.greScore")}>
                               <input
                                 type="number"
                                 value={formData.gre_score}
@@ -926,7 +919,7 @@ function SarthiPortal() {
                                 className={inputCls}
                               />
                             </Field>
-                            <Field label="GMAT Score">
+                            <Field label={t("form.gmatScore")}>
                               <input
                                 type="number"
                                 value={formData.gmat_score}
@@ -936,7 +929,7 @@ function SarthiPortal() {
                                 className={inputCls}
                               />
                             </Field>
-                            <Field label="IELTS Score">
+                            <Field label={t("form.ieltsScore")}>
                               <input
                                 type="number"
                                 value={formData.ielts_score}
@@ -946,7 +939,7 @@ function SarthiPortal() {
                                 className={inputCls}
                               />
                             </Field>
-                            <Field label="TOEFL Score">
+                            <Field label={t("form.toeflScore")}>
                               <input
                                 type="number"
                                 value={formData.toefl_score}
@@ -967,11 +960,11 @@ function SarthiPortal() {
                 {formData.occupation === "Farmer" && (
                   <div className="mt-4 space-y-4 border-t pt-4">
                     <Toggle
-                      label="Is Pattadar"
+                      label={t("form.isPattadar")}
                       checked={formData.is_pattadar}
                       onChange={(v) => setFormData({ ...formData, is_pattadar: v })}
                     />
-                    <Field label="Cultivable Land (Acres)">
+                    <Field label={t("form.cultivableLand")}>
                       <input
                         type="number"
                         value={formData.has_cultivable_land}
@@ -990,41 +983,41 @@ function SarthiPortal() {
                 id="welfare"
                 icon={Shield}
                 tone="rose"
-                eyebrow="Section 04"
-                title="Welfare Factors"
-                desc="Special categories for targeted support."
+                eyebrow={`${t("sections.eyebrow")} 04`}
+                title={t("sections.welfareTitle")}
+                desc={t("sections.welfareDesc")}
                 progress={completion.welfare}
               >
                 <div className="space-y-3">
                   <Toggle
-                    label="Widow"
+                    label={t("form.widow")}
                     checked={formData.is_widow}
                     onChange={(v) => setFormData({ ...formData, is_widow: v })}
                   />
                   <Toggle
-                    label="Single Woman"
+                    label={t("form.singleWoman")}
                     checked={formData.is_single_woman}
                     onChange={(v) => setFormData({ ...formData, is_single_woman: v })}
                   />
                   <Toggle
-                    label="Pregnant"
+                    label={t("form.pregnant")}
                     checked={formData.is_pregnant}
                     onChange={(v) => setFormData({ ...formData, is_pregnant: v })}
                   />
                   <Toggle
-                    label="Lactating"
+                    label={t("form.lactating")}
                     checked={formData.is_lactating}
                     onChange={(v) => setFormData({ ...formData, is_lactating: v })}
                   />
                   <Toggle
-                    label="Specific Medical Condition"
+                    label={t("form.medicalCondition")}
                     checked={formData.has_specific_medical_condition}
                     onChange={(v) =>
                       setFormData({ ...formData, has_specific_medical_condition: v })
                     }
                   />
                   <Toggle
-                    label="Person with Disability"
+                    label={t("form.disabled")}
                     checked={formData.is_disabled}
                     onChange={(v) => setFormData({ ...formData, is_disabled: v })}
                   />
@@ -1042,7 +1035,7 @@ function SarthiPortal() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 justify-between">
                   <div className="flex items-center gap-3 text-[12px] text-[#64748B]">
                     <Lock className="w-4 h-4 text-[#10B981]" />
-                    Processed securely. Never shared without consent.
+                    {t("submit.securityNote")}
                   </div>
                   <button
                     type="submit"
@@ -1051,12 +1044,12 @@ function SarthiPortal() {
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Evaluating profile…
+                        <Loader2 className="w-4 h-4 animate-spin" /> {t("submit.evaluating")}
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 text-[#F59E0B]" />
-                        Check eligible schemes
+                        {t("submit.checkSchemes")}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </>
                     )}
@@ -1076,7 +1069,7 @@ function SarthiPortal() {
 
                 <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
                   <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
-                    Popular Schemes
+                    {t("summary.popularSchemes")}
                   </div>
                   <div className="mt-3 space-y-2">
                     {[
@@ -1122,13 +1115,16 @@ function SarthiPortal() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
               <div>
                 <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#1E3A8A] bg-[#1E3A8A]/8 px-2.5 py-1 rounded-full">
-                  <CheckCircle2 className="w-3 h-3" /> Evaluation complete
+                  <CheckCircle2 className="w-3 h-3" /> {t("results.evaluationComplete")}
                 </div>
                 <h2 className="mt-3 text-[28px] sm:text-[34px] font-bold tracking-tight text-[#0B2240]">
-                  Your eligibility report
+                  {t("results.reportTitle")}
                 </h2>
                 <p className="text-[14px] text-[#64748B] mt-1">
-                  Matched against {matchedSchemes.length} schemes · {eligibleCount} fully eligible
+                  {t("results.reportSubtitle", {
+                    total: matchedSchemes.length,
+                    eligible: eligibleCount,
+                  })}
                 </p>
               </div>
               {eligibleCount > 0 && (
@@ -1136,7 +1132,8 @@ function SarthiPortal() {
                   href="#eligible"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#10B981] text-white font-semibold text-[13px] hover:bg-[#059669] transition"
                 >
-                  View {eligibleCount} eligible <ArrowRight className="w-4 h-4" />
+                  {t("results.viewEligible", { count: eligibleCount })}{" "}
+                  <ArrowRight className="w-4 h-4" />
                 </a>
               )}
             </div>
@@ -1147,11 +1144,9 @@ function SarthiPortal() {
                   <Search className="w-6 h-6 text-[#64748B]" />
                 </div>
                 <div className="mt-4 text-[16px] font-semibold text-[#0F172A]">
-                  No matching schemes found
+                  {t("results.noMatchTitle")}
                 </div>
-                <div className="text-[13px] text-[#64748B] mt-1">
-                  Try adjusting your profile to discover more benefits.
-                </div>
+                <div className="text-[13px] text-[#64748B] mt-1">{t("results.noMatchDesc")}</div>
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
@@ -1174,10 +1169,10 @@ function SarthiPortal() {
                   </div>
                   <div>
                     <h3 className="text-[22px] font-bold tracking-tight text-[#0B2240]">
-                      Fully Eligible Schemes
+                      {t("results.fullyEligibleTitle")}
                     </h3>
                     <div className="text-[13px] text-[#64748B]">
-                      You qualify for all criteria. Apply directly below.
+                      {t("results.fullyEligibleDesc")}
                     </div>
                   </div>
                 </div>
@@ -1203,7 +1198,7 @@ function SarthiPortal() {
         {/* SCHEMES TAB */}
         {activeTab === "schemes" && (
           <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-            <h2 className="text-xl font-bold mb-6">Available Welfare Schemes</h2>
+            <h2 className="text-xl font-bold mb-6">{t("schemesTabPage.heading")}</h2>
             <SchemeList />
           </div>
         )}
@@ -1211,7 +1206,7 @@ function SarthiPortal() {
         {/* APPLICATIONS TAB */}
         {activeTab === "applications" && (
           <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-            <h2 className="text-xl font-bold mb-4">My Applications</h2>
+            <h2 className="text-xl font-bold mb-4">{t("applications.heading")}</h2>
             <ApplicationsTab />
           </div>
         )}
@@ -1243,13 +1238,12 @@ function SarthiPortal() {
                 <div>
                   <div className="text-[16px] font-bold">SARTHI</div>
                   <div className="text-[10px] uppercase tracking-[0.14em] text-white/60">
-                    Government of Telangana
+                    {t("eligibleCard.govtOfTelangana")}
                   </div>
                 </div>
               </div>
               <p className="mt-5 text-[13px] leading-relaxed text-white/70 max-w-sm">
-                A unified welfare delivery platform empowering every Telangana citizen to discover
-                and claim their rightful benefits through a single, secure profile.
+                {t("footer.brandDesc")}
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {["ISO 27001", "Aadhaar Verified", "DigiLocker", "Bhashini"].map((b) => (
@@ -1265,27 +1259,27 @@ function SarthiPortal() {
 
             <div className="lg:col-span-2">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                Platform
+                {t("footer.platform")}
               </div>
               <ul className="mt-4 space-y-2.5 text-[13px] text-white/80">
                 <li>
                   <a href="#" className="hover:text-white">
-                    About SARTHI
+                    {t("footer.aboutSarthi")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white">
-                    Scheme Directory
+                    {t("footer.schemeDirectory")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white">
-                    DBT Status
+                    {t("footer.dbtStatus")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white">
-                    RTI Information
+                    {t("footer.rtiInformation")}
                   </a>
                 </li>
               </ul>
@@ -1293,27 +1287,27 @@ function SarthiPortal() {
 
             <div className="lg:col-span-3">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                Departments
+                {t("footer.departments")}
               </div>
               <ul className="mt-4 space-y-2.5 text-[13px] text-white/80">
                 <li>
                   <a href="#" className="hover:text-white">
-                    Welfare & Tribal Affairs
+                    {t("footer.welfareTribal")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white">
-                    Agriculture & Cooperation
+                    {t("footer.agriCoop")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white">
-                    Women & Child Development
+                    {t("footer.womenChild")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white">
-                    Health & Family Welfare
+                    {t("footer.healthFamily")}
                   </a>
                 </li>
               </ul>
@@ -1321,14 +1315,14 @@ function SarthiPortal() {
 
             <div className="lg:col-span-3 space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                Get in Touch
+                {t("footer.getInTouch")}
               </div>
               <div className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-white/10 grid place-items-center">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div className="text-[12px] text-white/80 leading-tight">
-                  Secretariat
+                  {t("footer.secretariat")}
                   <br />
                   Hyderabad — 500022
                 </div>
@@ -1349,19 +1343,16 @@ function SarthiPortal() {
           </div>
 
           <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-white/60">
-            <div>
-              © {new Date().getFullYear()} Government of Telangana · Powered by Centre for Good
-              Governance (CGG)
-            </div>
+            <div>{t("footer.copyright", { year: new Date().getFullYear() })}</div>
             <div className="flex items-center gap-4">
               <a href="#" className="hover:text-white">
-                Privacy
+                {t("footer.privacy")}
               </a>
               <a href="#" className="hover:text-white">
-                Terms
+                {t("footer.terms")}
               </a>
               <a href="#" className="hover:text-white">
-                Accessibility
+                {t("footer.accessibility")}
               </a>
             </div>
           </div>
@@ -1453,6 +1444,7 @@ function SectionCard({
   progress: number;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   const toneMap = {
     indigo: { bg: "bg-[#1E3A8A]/10", text: "text-[#1E3A8A]", bar: "bg-[#1E3A8A]" },
     emerald: { bg: "bg-[#10B981]/10", text: "text-[#047857]", bar: "bg-[#10B981]" },
@@ -1478,7 +1470,7 @@ function SectionCard({
             </span>
             {progress === 100 && (
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 px-1.5 py-0.5 rounded">
-                <CheckCircle2 className="w-3 h-3" /> Complete
+                <CheckCircle2 className="w-3 h-3" /> {t("sections.complete")}
               </span>
             )}
           </div>
@@ -1506,6 +1498,7 @@ function SummaryCard({
   eligibleCount: number;
   totalMatched: number;
 }) {
+  const { t } = useTranslation();
   const r = 36;
   const c = 2 * Math.PI * r;
   const dash = (completion.overall / 100) * c;
@@ -1513,7 +1506,7 @@ function SummaryCard({
   return (
     <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5 shadow-sm">
       <div className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
-        Live Summary
+        {t("summary.liveSummary")}
       </div>
       <div className="mt-4 flex items-center gap-4">
         <div className="relative w-[88px] h-[88px] shrink-0">
@@ -1542,22 +1535,24 @@ function SummaryCard({
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[14px] font-semibold text-[#0F172A]">Profile readiness</div>
-          <div className="text-[11px] text-[#64748B] mt-0.5">
-            Higher completion unlocks more accurate matches.
+          <div className="text-[14px] font-semibold text-[#0F172A]">
+            {t("summary.profileReadiness")}
           </div>
+          <div className="text-[11px] text-[#64748B] mt-0.5">{t("summary.readinessDesc")}</div>
         </div>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-2">
         <div className="rounded-xl bg-[#F8FAFC] p-3">
           <div className="text-[20px] font-bold text-[#0B2240]">{totalMatched}</div>
-          <div className="text-[10px] uppercase tracking-wider text-[#64748B] mt-0.5">Matched</div>
+          <div className="text-[10px] uppercase tracking-wider text-[#64748B] mt-0.5">
+            {t("summary.matched")}
+          </div>
         </div>
         <div className="rounded-xl bg-[#10B981]/10 p-3">
           <div className="text-[20px] font-bold text-[#047857]">{eligibleCount}</div>
           <div className="text-[10px] uppercase tracking-wider text-[#047857]/80 mt-0.5">
-            Eligible
+            {t("summary.eligible")}
           </div>
         </div>
       </div>
@@ -1574,6 +1569,7 @@ function SchemeMatchCard({
   input?: Partial<EngineFormData>;
   results?: Scheme[];
 }) {
+  const { t } = useTranslation();
   const { id } = resolveSchemeIdentity(scheme);
   const pct = scheme.percentage ?? 0;
   const fully = pct === 100;
@@ -1614,29 +1610,29 @@ function SchemeMatchCard({
             </div>
             {fully ? (
               <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 px-1.5 py-0.5 rounded">
-                <CheckCircle2 className="w-3 h-3" /> Eligible
+                <CheckCircle2 className="w-3 h-3" /> {t("matchCard.eligible")}
               </span>
             ) : (
               <span className="shrink-0 text-[10px] font-semibold text-[#64748B] bg-[#F1F5F9] px-1.5 py-0.5 rounded">
-                Partial
+                {t("matchCard.partial")}
               </span>
             )}
           </div>
           <div className="mt-2 text-[11.5px] text-[#64748B] leading-relaxed">
             {scheme.missing && scheme.missing.length > 0 ? (
               <>
-                <span className="font-semibold text-[#475569]">Missing: </span>
+                <span className="font-semibold text-[#475569]">{t("matchCard.missing")} </span>
                 {scheme.missing.join(", ")}
               </>
             ) : (
-              "All criteria met. Ready to apply."
+              t("matchCard.allCriteriaMet")
             )}
           </div>
         </div>
       </div>
       <div className="mt-4 pt-4 border-t border-[#F1F5F9] flex items-center justify-between">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8]">
-          Match Score
+          {t("matchCard.matchScore")}
         </div>
         {id ? (
           <Link
@@ -1645,11 +1641,11 @@ function SchemeMatchCard({
             search={buildSchemeLinkSearch("engine", { input, results })}
             className="text-[12px] font-semibold text-[#1E3A8A] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all"
           >
-            View details <ChevronRight className="w-3.5 h-3.5" />
+            {t("matchCard.viewDetails")} <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         ) : (
           <span className="text-[12px] font-semibold text-[#94A3B8] inline-flex items-center gap-1 cursor-not-allowed">
-            Details unavailable
+            {t("matchCard.detailsUnavailable")}
           </span>
         )}
       </div>

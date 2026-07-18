@@ -12,12 +12,15 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
+import { useTranslation } from "@/i18n/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
 function RegisterPage() {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,19 +41,19 @@ function RegisterPage() {
     setError("");
 
     if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill out every field to create your account.");
+      setError(t("auth.register.errFillAll"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords don't match.");
+      setError(t("auth.register.errPasswordMatch"));
       return;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+      setError(t("auth.register.errPasswordLength"));
       return;
     }
     if (!agreed) {
-      setError("Please accept the terms to continue.");
+      setError(t("auth.register.errAcceptTerms"));
       return;
     }
 
@@ -65,7 +68,7 @@ function RegisterPage() {
       // if (!res.ok) throw new Error("Could not create your account.");
       await new Promise((resolve) => setTimeout(resolve, 700));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : t("auth.somethingWrong"));
     } finally {
       setLoading(false);
     }
@@ -96,23 +99,23 @@ function RegisterPage() {
           <div className="leading-tight">
             <div className="text-[15px] font-bold tracking-tight">SARTHI</div>
             <div className="text-[10px] uppercase tracking-[0.14em] text-white/60 font-medium">
-              Don't Miss What's Yours
+              {t("auth.tagline")}
             </div>
           </div>
         </Link>
 
         <div className="relative">
           <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#10B981] bg-[#10B981]/10 px-2.5 py-1 rounded-full">
-            <Sparkles className="w-3 h-3" /> Free, always
+            <Sparkles className="w-3 h-3" /> {t("auth.register.freeBadge")}
           </div>
           <h1 className="mt-5 text-3xl font-bold tracking-tight leading-tight">
-            Create your account and never miss a scheme.
+            {t("auth.register.title")}
           </h1>
           <ul className="mt-5 space-y-2.5 text-[13.5px] text-white/80">
             {[
-              "Save your profile and re-run eligibility checks anytime",
-              "Track every application in one place",
-              "Get notified the moment a new scheme matches you",
+              t("auth.register.benefit1"),
+              t("auth.register.benefit2"),
+              t("auth.register.benefit3"),
             ].map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
@@ -124,13 +127,16 @@ function RegisterPage() {
 
         <div className="relative flex items-center gap-2 text-[12px] text-white/60">
           <ShieldCheck className="w-4 h-4" />
-          Your data is used only to evaluate scheme eligibility.
+          {t("auth.dataUsageNote")}
         </div>
       </div>
 
       {/* Form panel */}
       <div className="flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm">
+          <div className="flex justify-end mb-4">
+            <LanguageSwitcher variant="pill" />
+          </div>
           <div className="lg:hidden flex items-center gap-3 mb-8">
             <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#0B2240] to-[#1E3A8A] grid place-items-center text-white font-bold text-sm shadow-lg shadow-[#0B2240]/20">
               <span>SR</span>
@@ -139,19 +145,19 @@ function RegisterPage() {
             <div className="leading-tight">
               <div className="text-[15px] font-bold tracking-tight text-[#0F172A]">SARTHI</div>
               <div className="text-[10px] uppercase tracking-[0.14em] text-[#64748B] font-medium">
-                Don't Miss What's Yours
+                {t("auth.tagline")}
               </div>
             </div>
           </div>
 
           <div className="rounded-3xl bg-white border border-[#E2E8F0] shadow-sm p-8">
             <h2 className="text-[22px] font-bold tracking-tight text-[#0B2240]">
-              Create your account
+              {t("auth.register.heading")}
             </h2>
             <p className="text-[13px] text-[#64748B] mt-1.5">
-              Already registered?{" "}
+              {t("auth.register.alreadyRegistered")}{" "}
               <Link to="/login" className="font-semibold text-[#1E3A8A] hover:text-[#0B2240]">
-                Sign in
+                {t("auth.register.signIn")}
               </Link>
             </p>
 
@@ -164,7 +170,7 @@ function RegisterPage() {
 
               <label className="block">
                 <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
-                  Full name
+                  {t("auth.register.fullNameLabel")}
                 </span>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
@@ -172,7 +178,7 @@ function RegisterPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Priya Reddy"
+                    placeholder={t("auth.register.fullNamePlaceholder")}
                     autoComplete="name"
                     className="w-full pl-10 pr-3.5 py-2.5 text-[13px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] rounded-xl border border-[#E2E8F0] hover:border-[#CBD5E1] focus:outline-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/10 transition"
                   />
@@ -181,7 +187,7 @@ function RegisterPage() {
 
               <label className="block">
                 <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
-                  Email address
+                  {t("auth.emailLabel")}
                 </span>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
@@ -189,7 +195,7 @@ function RegisterPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder={t("auth.emailPlaceholder")}
                     autoComplete="email"
                     className="w-full pl-10 pr-3.5 py-2.5 text-[13px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] rounded-xl border border-[#E2E8F0] hover:border-[#CBD5E1] focus:outline-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/10 transition"
                   />
@@ -198,7 +204,7 @@ function RegisterPage() {
 
               <label className="block">
                 <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
-                  Password
+                  {t("auth.passwordLabel")}
                 </span>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
@@ -206,7 +212,7 @@ function RegisterPage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={t("auth.passwordPlaceholder")}
                     autoComplete="new-password"
                     className="w-full pl-10 pr-10 py-2.5 text-[13px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] rounded-xl border border-[#E2E8F0] hover:border-[#CBD5E1] focus:outline-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/10 transition"
                   />
@@ -214,7 +220,7 @@ function RegisterPage() {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#0B2240]"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -235,7 +241,7 @@ function RegisterPage() {
 
               <label className="block">
                 <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
-                  Confirm password
+                  {t("auth.register.confirmPasswordLabel")}
                 </span>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
@@ -243,7 +249,7 @@ function RegisterPage() {
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={t("auth.passwordPlaceholder")}
                     autoComplete="new-password"
                     className="w-full pl-10 pr-3.5 py-2.5 text-[13px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] rounded-xl border border-[#E2E8F0] hover:border-[#CBD5E1] focus:outline-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/10 transition"
                   />
@@ -258,8 +264,7 @@ function RegisterPage() {
                   className="mt-0.5 w-4 h-4 rounded border-[#CBD5E1] text-[#1E3A8A] focus:ring-[#1E3A8A]/30"
                 />
                 <span className="text-[12px] text-[#64748B] leading-relaxed">
-                  I agree to the SARTHI terms of use and understand my data will be used to evaluate
-                  scheme eligibility.
+                  {t("auth.register.agreeTerms")}
                 </span>
               </label>
 
@@ -270,11 +275,11 @@ function RegisterPage() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Creating account…
+                    <Loader2 className="w-4 h-4 animate-spin" /> {t("auth.register.submitting")}
                   </>
                 ) : (
                   <>
-                    Create account <ArrowRight className="w-4 h-4" />
+                    {t("auth.register.submit")} <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
@@ -283,7 +288,7 @@ function RegisterPage() {
 
           <p className="text-[11.5px] text-[#94A3B8] text-center mt-6">
             <Link to="/" className="hover:text-[#0B2240]">
-              ← Back to SARTHI
+              {t("auth.backToSarthi")}
             </Link>
           </p>
         </div>

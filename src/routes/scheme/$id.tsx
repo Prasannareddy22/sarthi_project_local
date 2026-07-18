@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getSchemeById } from "../../services/schemeService";
 import { parseSchemeDetailSearch, type SchemeDetailSearch } from "@/lib/engineState";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export const Route = createFileRoute("/scheme/$id")({
   validateSearch: (search: Record<string, unknown>): SchemeDetailSearch =>
@@ -9,19 +10,21 @@ export const Route = createFileRoute("/scheme/$id")({
 });
 
 function SchemeDetail() {
+  const { t } = useTranslation();
   const { id } = Route.useParams();
   const { from, input, results } = Route.useSearch();
   const scheme = getSchemeById(id);
   const backTab = from ?? "schemes";
-  const backLabel = backTab === "engine" ? "Back to Eligibility Engine" : "Back to all schemes";
+  const backLabel =
+    backTab === "engine" ? t("schemeDetail.backToEngine") : t("schemeDetail.backToSchemes");
   const backSearch = backTab === "engine" ? { tab: backTab, input, results } : { tab: backTab };
 
   if (!scheme) {
     return (
       <div className="p-10 text-center text-slate-600">
-        <h2 className="text-2xl font-bold mb-2">Scheme not found!</h2>
+        <h2 className="text-2xl font-bold mb-2">{t("schemeDetail.notFoundTitle")}</h2>
         <Link to="/" search={backSearch} className="text-blue-600 hover:underline">
-          Return to Dashboard
+          {t("schemeDetail.returnToDashboard")}
         </Link>
       </div>
     );
@@ -47,7 +50,7 @@ function SchemeDetail() {
       {/* Two-Column Grid for Details */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-          <h3 className="text-lg font-bold text-blue-900 mb-3">Key Benefits</h3>
+          <h3 className="text-lg font-bold text-blue-900 mb-3">{t("schemeDetail.keyBenefits")}</h3>
           <ul className="space-y-2 list-none">
             {scheme.benefits.map((b: string, i: number) => (
               <li key={i} className="text-blue-800 text-sm flex items-start">
@@ -58,7 +61,9 @@ function SchemeDetail() {
         </div>
 
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
-          <h3 className="text-lg font-bold text-slate-900 mb-3">Required Documents</h3>
+          <h3 className="text-lg font-bold text-slate-900 mb-3">
+            {t("schemeDetail.requiredDocuments")}
+          </h3>
           <ul className="space-y-2 list-disc ml-4">
             {scheme.documents.map((doc: string, i: number) => (
               <li key={i} className="text-slate-700 text-sm">
@@ -72,10 +77,8 @@ function SchemeDetail() {
       {/* Official CTA Section */}
       <div className="p-6 bg-slate-900 rounded-xl text-white flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-          <h3 className="font-bold text-lg">Ready to apply?</h3>
-          <p className="text-slate-300 text-sm">
-            Visit the official portal to complete your application.
-          </p>
+          <h3 className="font-bold text-lg">{t("schemeDetail.readyToApply")}</h3>
+          <p className="text-slate-300 text-sm">{t("schemeDetail.readyToApplyDesc")}</p>
         </div>
         <a
           href={scheme.onlineLink}
@@ -83,7 +86,7 @@ function SchemeDetail() {
           rel="noopener noreferrer"
           className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors whitespace-nowrap"
         >
-          Visit Official Portal
+          {t("schemeDetail.visitPortal")}
         </a>
       </div>
     </div>

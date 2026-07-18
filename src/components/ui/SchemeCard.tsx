@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -15,6 +14,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { Scheme } from "@/data/schemes";
+import { useTranslation } from "@/i18n/useTranslation";
+import { translateCategory } from "@/i18n/categories";
 
 interface SchemeCardProps {
   scheme: Scheme;
@@ -93,6 +94,7 @@ const fallbackStyle = {
 };
 
 const SchemeCard: React.FC<SchemeCardProps> = ({ scheme, isTargeted }) => {
+  const { t } = useTranslation();
   const style = categoryStyle[scheme.category] ?? fallbackStyle;
   const { Icon } = style;
 
@@ -118,7 +120,7 @@ const SchemeCard: React.FC<SchemeCardProps> = ({ scheme, isTargeted }) => {
           <Icon className="w-5 h-5" />
         </div>
         <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full">
-          {scheme.category}
+          {translateCategory(t, scheme.category)}
         </span>
       </div>
 
@@ -137,7 +139,7 @@ const SchemeCard: React.FC<SchemeCardProps> = ({ scheme, isTargeted }) => {
         {/* Benefits */}
         <div className="mt-auto">
           <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-2">
-            Key Benefits
+            {t("schemeList.keyBenefits")}
           </div>
           <ul className="space-y-1.5">
             {scheme.benefits.slice(0, 2).map((benefit, i) => (
@@ -163,7 +165,7 @@ const SchemeCard: React.FC<SchemeCardProps> = ({ scheme, isTargeted }) => {
           data-testid={`scheme-card-view-${scheme.id}`}
           className="w-full inline-flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-[#0B2240] text-white text-[13px] font-semibold hover:bg-[#1E3A8A] active:scale-[0.99] transition-all"
         >
-          <span>View Details</span>
+          <span>{t("schemeList.viewDetails")}</span>
           <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
       </div>

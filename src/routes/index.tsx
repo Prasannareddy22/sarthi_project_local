@@ -676,45 +676,6 @@ function SarthiPortal() {
 
             {/* MAIN FORM */}
             <div className="col-span-12 lg:col-span-6 space-y-6">
-              {/* Voice fill (natural language) */}
-              <div className="rounded-2xl border border-[#1E3A8A]/15 bg-gradient-to-br from-[#1E3A8A]/5 to-white p-4 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <MicButton
-                    language={language}
-                    label={t("voice.fillByVoice")}
-                    size="lg"
-                    continuous
-                    busy={voiceBusy}
-                    onTranscript={handleNaturalLanguage}
-                    onInterim={setVoiceInterim}
-                    onError={handleVoiceError}
-                  />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#0B2240]">
-                      <Mic className="w-3.5 h-3.5 text-[#1E3A8A]" />
-                      {t("voice.fillByVoice")}
-                    </div>
-                    <p className="text-[11px] text-[#64748B] leading-snug mt-0.5">
-                      {t("voice.speakNaturally")}
-                    </p>
-                  </div>
-                </div>
-                {/* Shared, non-layout-shifting live region for voice feedback */}
-                <div aria-live="polite" className="mt-2 empty:mt-0">
-                  {voiceInterim && (
-                    <p className="text-[12px] text-[#64748B] italic">“{voiceInterim}”</p>
-                  )}
-                  {voiceNotice && (
-                    <p className="text-[12px] font-medium text-[#047857]">{voiceNotice}</p>
-                  )}
-                  {voiceError && (
-                    <p className="text-[12px] font-medium text-[#DC2626]" role="alert">
-                      {voiceError}
-                    </p>
-                  )}
-                </div>
-              </div>
-
               {/* Section A */}
               <SectionCard
                 id="personal"
@@ -725,6 +686,45 @@ function SarthiPortal() {
                 desc={t("sections.personalDesc")}
                 progress={completion.personal}
               >
+                {/* Voice fill (natural language) */}
+                <div className="mb-5 rounded-xl border border-[#1E3A8A]/15 bg-gradient-to-br from-[#1E3A8A]/5 to-white p-3.5">
+                  <div className="flex items-center gap-3">
+                    <MicButton
+                      language={language}
+                      label={t("voice.fillByVoice")}
+                      size="lg"
+                      continuous
+                      busy={voiceBusy}
+                      onTranscript={handleNaturalLanguage}
+                      onInterim={setVoiceInterim}
+                      onError={handleVoiceError}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#0B2240]">
+                        <Mic className="w-3.5 h-3.5 text-[#1E3A8A]" />
+                        {t("voice.fillByVoice")}
+                      </div>
+                      <p className="text-[11px] text-[#64748B] leading-snug mt-0.5">
+                        {t("voice.speakNaturally")}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Shared, non-layout-shifting live region for voice feedback */}
+                  <div aria-live="polite" className="mt-2 empty:mt-0">
+                    {voiceInterim && (
+                      <p className="text-[12px] text-[#64748B] italic">“{voiceInterim}”</p>
+                    )}
+                    {voiceNotice && (
+                      <p className="text-[12px] font-medium text-[#047857]">{voiceNotice}</p>
+                    )}
+                    {voiceError && (
+                      <p className="text-[12px] font-medium text-[#DC2626]" role="alert">
+                        {voiceError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 {/* Name & Age Row */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label={t("form.fullName")} required>

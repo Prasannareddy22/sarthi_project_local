@@ -41,7 +41,8 @@
   --shadow-elegant: 0 10px 30px -10px color-mix(in oklab, var(--navy) 25%, transparent);
   --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
   --shadow-pop: 0 20px 40px -15px color-mix(in oklab, var(--navy) 30%, transparent);
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    "Inter", "Noto Sans Telugu", "Noto Sans Devanagari", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -57,7 +58,7 @@
   --secondary: oklch(0.96 0.01 250);
   --secondary-foreground: oklch(0.28 0.09 260);
   --muted: oklch(0.96 0.01 250);
-  --muted-foreground: oklch(0.50 0.03 255);
+  --muted-foreground: oklch(0.5 0.03 255);
   --accent: oklch(0.95 0.02 255);
   --accent-foreground: oklch(0.28 0.09 260);
   --destructive: oklch(0.58 0.22 25);
@@ -65,7 +66,7 @@
   --border: oklch(0.91 0.015 250);
   --input: oklch(0.91 0.015 250);
   --ring: oklch(0.55 0.15 260);
-  --navy: oklch(0.27 0.10 260);
+  --navy: oklch(0.27 0.1 260);
   --navy-foreground: oklch(0.99 0.005 240);
   --saffron: oklch(0.72 0.18 55);
   --saffron-foreground: oklch(0.15 0.03 250);
@@ -85,21 +86,34 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 { letter-spacing: -0.02em; }
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
+  }
 }
 
 @keyframes marquee {
-  from { transform: translateX(0%); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
-.animate-marquee { animation: marquee 40s linear infinite; }
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
 
 .input {
   width: 100%;
@@ -109,11 +123,16 @@
   padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
   color: var(--color-foreground);
-  transition: border-color 150ms, box-shadow 150ms;
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
   outline: none;
 }
-.input:focus, .input:focus-visible {
+.input:focus,
+.input:focus-visible {
   border-color: var(--navy);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--navy) 15%, transparent);
 }
-.input::placeholder { color: var(--color-muted-foreground); }
+.input::placeholder {
+  color: var(--color-muted-foreground);
+}

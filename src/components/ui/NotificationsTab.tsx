@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Bell, CheckCircle2, Info, AlertTriangle, Sparkles, Trash2 } from "lucide-react";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/translations";
 
 type NotificationType = "success" | "info" | "warning" | "match";
 
 interface Notification {
   id: string;
   type: NotificationType;
-  title: string;
-  message: string;
-  time: string;
+  titleKey: TranslationKey;
+  messageKey: TranslationKey;
+  timeKey: TranslationKey;
   read: boolean;
 }
 
@@ -17,36 +19,33 @@ const initialNotifications: Notification[] = [
   {
     id: "n1",
     type: "match",
-    title: "New scheme match found",
-    message:
-      "You're 100% eligible for the Kalyana Lakshmi Scheme based on your latest profile update.",
-    time: "2 hours ago",
+    titleKey: "notifications.items.n1Title",
+    messageKey: "notifications.items.n1Message",
+    timeKey: "notifications.time.hoursAgo",
     read: false,
   },
   {
     id: "n2",
     type: "success",
-    title: "Application approved",
-    message:
-      "Your Gruha Jyothi application has been approved and free electricity billing starts next cycle.",
-    time: "1 day ago",
+    titleKey: "notifications.items.n2Title",
+    messageKey: "notifications.items.n2Message",
+    timeKey: "notifications.time.dayAgo",
     read: false,
   },
   {
     id: "n3",
     type: "warning",
-    title: "Document verification pending",
-    message:
-      "Please upload your income certificate to continue processing your Cheyutha pension application.",
-    time: "3 days ago",
+    titleKey: "notifications.items.n3Title",
+    messageKey: "notifications.items.n3Message",
+    timeKey: "notifications.time.daysAgo3",
     read: true,
   },
   {
     id: "n4",
     type: "info",
-    title: "Portal maintenance notice",
-    message: "SARTHI will undergo scheduled maintenance this Sunday from 2:00 AM to 4:00 AM IST.",
-    time: "5 days ago",
+    titleKey: "notifications.items.n4Title",
+    messageKey: "notifications.items.n4Message",
+    timeKey: "notifications.time.daysAgo5",
     read: true,
   },
 ];
@@ -60,6 +59,7 @@ const typeStyles: Record<NotificationType, { icon: React.ElementType; bg: string
   };
 
 export default function NotificationsTab() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
@@ -75,17 +75,15 @@ export default function NotificationsTab() {
     <div>
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-xl font-bold text-[#0B2240]">Notifications</h2>
-          <p className="text-[13px] text-[#64748B] mt-1">
-            Updates on your applications, matches, and portal announcements.
-          </p>
+          <h2 className="text-xl font-bold text-[#0B2240]">{t("notifications.title")}</h2>
+          <p className="text-[13px] text-[#64748B] mt-1">{t("notifications.subtitle")}</p>
         </div>
         {unreadCount > 0 && (
           <button
             onClick={markAllRead}
             className="text-[12.5px] font-semibold text-[#1E3A8A] hover:text-[#0B2240] transition-colors"
           >
-            Mark all as read
+            {t("notifications.markAllRead")}
           </button>
         )}
       </div>
@@ -101,7 +99,9 @@ export default function NotificationsTab() {
                 : "bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]"
             }`}
           >
-            {f === "all" ? "All" : `Unread (${unreadCount})`}
+            {f === "all"
+              ? t("notifications.all")
+              : t("notifications.unread", { count: unreadCount })}
           </button>
         ))}
       </div>
@@ -113,9 +113,9 @@ export default function NotificationsTab() {
               <Bell className="w-6 h-6 text-[#64748B]" />
             </div>
             <div className="mt-4 text-[15px] font-semibold text-[#0F172A]">
-              You're all caught up
+              {t("notifications.caughtUpTitle")}
             </div>
-            <div className="text-[13px] text-[#64748B] mt-1">No notifications to show here.</div>
+            <div className="text-[13px] text-[#64748B] mt-1">{t("notifications.caughtUpDesc")}</div>
           </div>
         ) : (
           visible.map((n) => {
@@ -135,25 +135,27 @@ export default function NotificationsTab() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <div className="text-[13.5px] font-bold text-[#0B2240]">{n.title}</div>
+                    <div className="text-[13.5px] font-bold text-[#0B2240]">{t(n.titleKey)}</div>
                     {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A8A]" />}
                   </div>
-                  <p className="text-[12.5px] text-[#64748B] mt-1 leading-relaxed">{n.message}</p>
+                  <p className="text-[12.5px] text-[#64748B] mt-1 leading-relaxed">
+                    {t(n.messageKey)}
+                  </p>
                   <div className="flex items-center gap-3 mt-2">
-                    <span className="text-[11px] text-[#94A3B8] font-medium">{n.time}</span>
+                    <span className="text-[11px] text-[#94A3B8] font-medium">{t(n.timeKey)}</span>
                     {!n.read && (
                       <button
                         onClick={() => markRead(n.id)}
                         className="text-[11px] font-semibold text-[#1E3A8A] hover:text-[#0B2240]"
                       >
-                        Mark as read
+                        {t("notifications.markAsRead")}
                       </button>
                     )}
                   </div>
                 </div>
                 <button
                   onClick={() => dismiss(n.id)}
-                  aria-label="Dismiss notification"
+                  aria-label={t("notifications.dismiss")}
                   className="shrink-0 p-1.5 rounded-lg text-[#94A3B8] hover:text-[#0B2240] hover:bg-[#F1F5F9] transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

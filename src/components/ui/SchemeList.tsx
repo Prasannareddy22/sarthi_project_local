@@ -3,6 +3,8 @@ import { Search, LayoutGrid, X } from "lucide-react";
 import { getAllSchemes } from "../../services/schemeService";
 import SchemeCard from "./SchemeCard";
 import type { Scheme } from "@/data/schemes";
+import { useTranslation } from "@/i18n/useTranslation";
+import { translateCategory } from "@/i18n/categories";
 
 /**
  * Preferred display order for categories. Any category not listed here
@@ -29,9 +31,13 @@ const sortCategories = (a: string, b: string) => {
 };
 
 const SchemeList: React.FC = () => {
+  const { t } = useTranslation();
   const [schemes] = useState<Scheme[]>(getAllSchemes());
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("All");
+
+  const categoryLabel = (cat: string) =>
+    cat === "All" ? t("schemeList.all") : translateCategory(t, cat);
 
   // All available categories (for filter chips)
   const categories = useMemo(() => {
@@ -48,8 +54,7 @@ const SchemeList: React.FC = () => {
         s.name.toLowerCase().includes(q) ||
         s.description.toLowerCase().includes(q) ||
         s.category.toLowerCase().includes(q);
-      const matchesCat =
-        activeCategory === "All" || s.category === activeCategory;
+      const matchesCat = activeCategory === "All" || s.category === activeCategory;
       return matchesSearch && matchesCat;
     });
 
@@ -59,9 +64,7 @@ const SchemeList: React.FC = () => {
       byCat.get(s.category)!.push(s);
     }
 
-    return Array.from(byCat.entries()).sort(([a], [b]) =>
-      sortCategories(a, b)
-    );
+    return Array.from(byCat.entries()).sort(([a], [b]) => sortCategories(a, b));
   }, [schemes, search, activeCategory]);
 
   const totalCount = grouped.reduce((n, [, arr]) => n + arr.length, 0);
@@ -74,19 +77,16 @@ const SchemeList: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#1E3A8A] bg-[#1E3A8A]/10 px-3 py-1 rounded-full mb-3">
               <LayoutGrid className="w-3.5 h-3.5" />
-              Welfare Catalog
+              {t("schemeList.catalog")}
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0B2240]">
-              Available Welfare Schemes
+              {t("schemeList.heading")}
             </h2>
-            <p className="mt-1.5 text-sm text-slate-500 max-w-2xl">
-              Explore schemes across categories. Filter by name or pick a
-              category to narrow down what you need.
-            </p>
+            <p className="mt-1.5 text-sm text-slate-500 max-w-2xl">{t("schemeList.description")}</p>
           </div>
           <div className="text-xs text-slate-500">
             <span className="font-semibold text-[#0B2240]">{totalCount}</span>{" "}
-            {totalCount === 1 ? "scheme" : "schemes"} shown
+            {totalCount === 1 ? t("schemeList.schemeShown") : t("schemeList.schemesShown")}
           </div>
         </div>
       </header>
@@ -103,7 +103,7 @@ const SchemeList: React.FC = () => {
             <input
               data-testid="scheme-search-input"
               type="text"
-              placeholder="Search schemes by name, description or category…"
+              placeholder={t("schemeList.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-9 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/25 focus:border-[#1E3A8A]/60 transition"
@@ -112,7 +112,7 @@ const SchemeList: React.FC = () => {
               <button
                 onClick={() => setSearch("")}
                 data-testid="scheme-search-clear"
-                aria-label="Clear search"
+                aria-label={t("schemeList.clearSearch")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
               >
                 <X className="w-4 h-4" />
@@ -139,7 +139,7 @@ const SchemeList: React.FC = () => {
                       : "bg-white text-slate-600 border-slate-200 hover:border-[#0B2240]/40 hover:text-[#0B2240]",
                   ].join(" ")}
                 >
-                  {cat}
+                  {categoryLabel(cat)}
                 </button>
               );
             })}
@@ -156,12 +156,8 @@ const SchemeList: React.FC = () => {
           <div className="mx-auto w-12 h-12 rounded-full bg-white border border-slate-200 grid place-items-center mb-3">
             <Search className="w-5 h-5 text-slate-400" />
           </div>
-          <p className="text-sm font-semibold text-[#0B2240]">
-            No schemes match your filters
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            Try clearing the search or selecting a different category.
-          </p>
+          <p className="text-sm font-semibold text-[#0B2240]">{t("schemeList.emptyTitle")}</p>
+          <p className="text-xs text-slate-500 mt-1">{t("schemeList.emptyDesc")}</p>
         </div>
       ) : (
         <div className="space-y-10 sm:space-y-12">
@@ -176,7 +172,7 @@ const SchemeList: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <span className="inline-block h-6 w-1 rounded-full bg-gradient-to-b from-[#0B2240] to-[#1E3A8A]" />
                     <h3 className="text-base sm:text-lg font-bold tracking-tight text-[#0B2240]">
-                      {category}
+                      {categoryLabel(category)}
                     </h3>
                     <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
                       {list.length}

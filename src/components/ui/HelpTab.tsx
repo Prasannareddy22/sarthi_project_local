@@ -2,7 +2,11 @@ import { useState } from "react";
 import { HelpCircle, Phone, Mail, MessageCircle, ChevronDown, Search, MapPin } from "lucide-react";
 import { useTranslation } from "@/i18n/useTranslation";
 
-export default function HelpTab() {
+interface HelpTabProps {
+  onStartChat?: () => void;
+}
+
+export default function HelpTab({ onStartChat }: HelpTabProps = {}) {
   const { t } = useTranslation();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [query, setQuery] = useState("");
@@ -137,7 +141,10 @@ export default function HelpTab() {
             <div className="text-[12.5px] text-white/70">{t("help.stillStuckDesc")}</div>
           </div>
         </div>
-        <button className="px-4 py-2 rounded-xl bg-white text-[#0B2240] text-[13px] font-semibold hover:bg-white/90 transition-colors whitespace-nowrap">
+        <button
+          onClick={onStartChat}
+          className="px-4 py-2 rounded-xl bg-white text-[#0B2240] text-[13px] font-semibold hover:bg-white/90 transition-colors whitespace-nowrap"
+        >
           {t("help.startChat")}
         </button>
       </div>

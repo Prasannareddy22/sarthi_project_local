@@ -21,6 +21,7 @@ import { localizeSchemeNameById } from "@/i18n/schemes";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import MicButton from "@/components/voice/MicButton";
 import SpeechControls from "@/components/voice/SpeechControls";
+import PersonalAssistant from "@/components/PersonalAssistant";
 import { extractProfile } from "@/voice/extractProfile";
 import { applyExtraction } from "@/voice/applyExtraction";
 
@@ -68,6 +69,7 @@ function SarthiPortal() {
   const navigate = Route.useNavigate();
   const { tab } = search;
   const [activeTab, setActiveTab] = useState<TabId>(tab || "engine");
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   useEffect(() => {
     if (tab) {
@@ -1383,7 +1385,7 @@ function SarthiPortal() {
         {/* HELP TAB */}
         {activeTab === "help" && (
           <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-            <HelpTab />
+            <HelpTab onStartChat={() => setAssistantOpen(true)} />
           </div>
         )}
       </main>
@@ -1520,6 +1522,9 @@ function SarthiPortal() {
           </div>
         </div>
       </footer>
+
+      {/* PERSONAL ASSISTANT */}
+      <PersonalAssistant forceOpen={assistantOpen} onForceOpenHandled={() => setAssistantOpen(false)} />
     </div>
   );
 }

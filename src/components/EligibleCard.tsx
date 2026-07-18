@@ -5,6 +5,7 @@ import { resolveSchemeIdentity, type MatchedSchemeRaw } from "@/lib/schemeMatch"
 import { buildSchemeLinkSearch, type TabId, type EngineFormData } from "@/lib/engineState";
 import type { Scheme } from "@/components/ui/SchemesTab";
 import { useTranslation } from "@/i18n/useTranslation";
+import { localizeSchemeNameById } from "@/i18n/schemes";
 
 export interface EligibleCardProps {
   // Accepts either a canonical catalog scheme ({id, name, ...}) or a raw
@@ -25,8 +26,9 @@ export default function EligibleCard({
   input,
   results,
 }: EligibleCardProps) {
-  const { t } = useTranslation();
-  const { id, name } = resolveSchemeIdentity(scheme);
+  const { t, language } = useTranslation();
+  const { id, name: rawName } = resolveSchemeIdentity(scheme);
+  const name = localizeSchemeNameById(language, id, rawName);
 
   if (!id) {
     console.log("DEBUG: ID resolution failed. Inspecting scheme object:", scheme);

@@ -5,6 +5,7 @@ import SchemeCard from "./SchemeCard";
 import type { Scheme } from "@/data/schemes";
 import { useTranslation } from "@/i18n/useTranslation";
 import { translateCategory } from "@/i18n/categories";
+import { localizeScheme } from "@/i18n/schemes";
 
 /**
  * Preferred display order for categories. Any category not listed here
@@ -31,10 +32,18 @@ const sortCategories = (a: string, b: string) => {
 };
 
 const SchemeList: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [schemes] = useState<Scheme[]>(getAllSchemes());
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("All");
+
+  // Localize scheme content for display and search; category stays the raw
+  // English value so filtering/grouping is unaffected (labels are translated
+  // separately via `categoryLabel`).
+  const localizedSchemes = useMemo(
+    () => schemes.map((s) => localizeScheme(language, s)),
+    [schemes, language],
+  );
 
   const categoryLabel = (cat: string) =>
     cat === "All" ? t("schemeList.all") : translateCategory(t, cat);
@@ -48,7 +57,7 @@ const SchemeList: React.FC = () => {
   // Filtered + grouped
   const grouped = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const filtered = schemes.filter((s) => {
+    const filtered = localizedSchemes.filter((s) => {
       const matchesSearch =
         !q ||
         s.name.toLowerCase().includes(q) ||
@@ -65,7 +74,7 @@ const SchemeList: React.FC = () => {
     }
 
     return Array.from(byCat.entries()).sort(([a], [b]) => sortCategories(a, b));
-  }, [schemes, search, activeCategory]);
+  }, [localizedSchemes, search, activeCategory]);
 
   const totalCount = grouped.reduce((n, [, arr]) => n + arr.length, 0);
 

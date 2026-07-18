@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { getSchemeById } from "../../services/schemeService";
 import { parseSchemeDetailSearch, type SchemeDetailSearch } from "@/lib/engineState";
 import { useTranslation } from "@/i18n/useTranslation";
+import { localizeScheme } from "@/i18n/schemes";
 
 export const Route = createFileRoute("/scheme/$id")({
   validateSearch: (search: Record<string, unknown>): SchemeDetailSearch =>
@@ -10,10 +11,11 @@ export const Route = createFileRoute("/scheme/$id")({
 });
 
 function SchemeDetail() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { id } = Route.useParams();
   const { from, input, results } = Route.useSearch();
-  const scheme = getSchemeById(id);
+  const catalogScheme = getSchemeById(id);
+  const scheme = catalogScheme ? localizeScheme(language, catalogScheme) : catalogScheme;
   const backTab = from ?? "schemes";
   const backLabel =
     backTab === "engine" ? t("schemeDetail.backToEngine") : t("schemeDetail.backToSchemes");

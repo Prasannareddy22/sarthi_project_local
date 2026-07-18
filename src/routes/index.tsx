@@ -17,6 +17,7 @@ import {
   buildSchemeLinkSearch,
 } from "@/lib/engineState";
 import { useTranslation } from "@/i18n/useTranslation";
+import { localizeSchemeNameById } from "@/i18n/schemes";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 import {
@@ -1198,7 +1199,6 @@ function SarthiPortal() {
         {/* SCHEMES TAB */}
         {activeTab === "schemes" && (
           <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-            <h2 className="text-xl font-bold mb-6">{t("schemesTabPage.heading")}</h2>
             <SchemeList />
           </div>
         )}
@@ -1569,8 +1569,9 @@ function SchemeMatchCard({
   input?: Partial<EngineFormData>;
   results?: Scheme[];
 }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { id } = resolveSchemeIdentity(scheme);
+  const name = localizeSchemeNameById(language, id, scheme.name || scheme.scheme || "");
   const pct = scheme.percentage ?? 0;
   const fully = pct === 100;
   const r = 22;
@@ -1605,9 +1606,7 @@ function SchemeMatchCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div className="text-[14px] font-bold text-[#0B2240] leading-snug">
-              {scheme.name || scheme.scheme}
-            </div>
+            <div className="text-[14px] font-bold text-[#0B2240] leading-snug">{name}</div>
             {fully ? (
               <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold text-[#10B981] bg-[#10B981]/10 px-1.5 py-0.5 rounded">
                 <CheckCircle2 className="w-3 h-3" /> {t("matchCard.eligible")}

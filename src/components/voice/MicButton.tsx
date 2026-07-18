@@ -18,6 +18,7 @@ import type { TranslationKey } from "@/i18n/translations/types";
 const ERROR_KEY: Record<SpeechErrorCode, TranslationKey> = {
   "not-supported": "voice.errorNotSupported",
   "not-allowed": "voice.errorNotAllowed",
+  "service-not-allowed": "voice.errorServiceNotAllowed",
   "no-speech": "voice.errorNoSpeech",
   network: "voice.errorNetwork",
   "audio-capture": "voice.errorAudioCapture",
@@ -94,6 +95,9 @@ export default function MicButton({
       return;
     }
     clearError();
+    // Clear any stale error shown by the caller (e.g. a previous "permission
+    // denied") so retrying after granting access doesn't leave it on screen.
+    onError?.("");
     start({
       lang: speechLocaleFor(language),
       continuous,

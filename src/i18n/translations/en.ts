@@ -377,6 +377,8 @@ export const en = {
     stop: "Stop",
     errorNotSupported: "Voice input isn't supported in this browser. Try Chrome or Edge.",
     errorNotAllowed: "Microphone access was denied. Please allow it in your browser settings.",
+    errorServiceNotAllowed:
+      "Speech recognition is unavailable in this browser. Use Google Chrome or Microsoft Edge (not Brave/other Chromium).",
     errorNoSpeech: "Didn't catch that — please try again.",
     errorNetwork: "Network unavailable. Check your connection and try again.",
     errorAudioCapture: "No microphone found. Please connect one and try again.",

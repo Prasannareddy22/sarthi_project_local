@@ -379,6 +379,8 @@ export const hi: PartialTranslation = {
     errorNotSupported: "इस ब्राउज़र में वॉइस इनपुट समर्थित नहीं है। Chrome या Edge आज़माएँ।",
     errorNotAllowed:
       "माइक्रोफ़ोन एक्सेस अस्वीकृत कर दिया गया। कृपया ब्राउज़र सेटिंग्स में अनुमति दें।",
+    errorServiceNotAllowed:
+      "इस ब्राउज़र में वॉइस पहचान उपलब्ध नहीं है। Google Chrome या Microsoft Edge उपयोग करें (Brave नहीं)।",
     errorNoSpeech: "समझ नहीं आया — कृपया दोबारा प्रयास करें।",
     errorNetwork: "नेटवर्क उपलब्ध नहीं है। अपना कनेक्शन जाँचें और दोबारा प्रयास करें।",
     errorAudioCapture: "कोई माइक्रोफ़ोन नहीं मिला। कृपया एक कनेक्ट करें और दोबारा प्रयास करें।",

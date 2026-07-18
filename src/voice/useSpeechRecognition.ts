@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type SpeechErrorCode =
   | "not-supported"
   | "not-allowed"
+  | "service-not-allowed"
   | "no-speech"
   | "network"
   | "audio-capture"
@@ -88,7 +89,7 @@ export function useSpeechRecognition() {
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       const map: Record<string, SpeechErrorCode> = {
         "not-allowed": "not-allowed",
-        "service-not-allowed": "not-allowed",
+        "service-not-allowed": "service-not-allowed",
         "no-speech": "no-speech",
         network: "network",
         "audio-capture": "audio-capture",
